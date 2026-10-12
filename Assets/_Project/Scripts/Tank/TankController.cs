@@ -41,7 +41,7 @@ namespace TankBrawl.Tank
             float angle = body.rotation;
             float targetSpeed = 0f;
 
-            // Dead zone is applied by the input processor, so any non-zero value is intentional.
+            // The dead zone comes from Input System settings (Default Deadzone Min), so any non-zero value is intentional.
             if (move.sqrMagnitude > 0f)
             {
                 float targetAngle = Mathf.Atan2(move.y, move.x) * Mathf.Rad2Deg - 90f;

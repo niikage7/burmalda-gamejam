@@ -46,7 +46,7 @@
 - Привязки: геймпад (левый стик, кнопки) + клавиатура (WASD, Space/ЛКМ — выстрел, Shift — нитро, Q — смена снаряда).
 - Экранное управление: `On-Screen Stick` и `On-Screen Button` (эмулируют геймпад). Раскладка: стик слева; справа большая кнопка выстрела, рядом нитро, над выстрелом у края маленькая кнопка смены снаряда; таймер павер-апа внизу по центру, полупрозрачный.
 - Экранный UI показывается при `Application.isMobilePlatform`; в редакторе — по галочке `showTouchInEditor`.
-- Мёртвая зона стика задаётся процессором на действии `Move`, общая для геймпада и экранного стика.
+- Мёртвая зона стика одна, общая: Project Settings → Input System Package → Default Deadzone Min/Max (по умолчанию 0,125 / 0,925). Её применяет сам стик (`<Gamepad>/leftStick`), поэтому она работает и для геймпада, и для экранного стика, который его эмулирует. Процессоров на действии `Move` не вешать: зона применится дважды.
 
 ## Архитектура
 - Папки: `Assets/_Project/{Scripts,Prefabs,Scenes,ScriptableObjects,Art,Audio,Input}`.
@@ -61,7 +61,8 @@
 ## Особенности Unity 6 / 6.6 (частые ошибки)
 - **Fast Enter Play Mode включён, domain reload выключен:** статические поля и подписки не сбрасываются между запусками Play Mode. Каждое static-поле сбрасывать в методе с `[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]`; от static-событий всегда отписываться в `OnDisable`/`OnDestroy`.
 - `Rigidbody2D.linearVelocity` (не `velocity`), `linearDamping` (не `drag`).
-- `FindObjectsByType` / `FindFirstObjectByType` вместо устаревших `FindObjectsOfType` / `FindObjectOfType`.
+- `FindObjectsByType<T>()` / `FindAnyObjectByType<T>()` вместо устаревших `FindObjectsOfType` / `FindObjectOfType`. В 6.6 `FindFirstObjectByType` и `FindObjectsSortMode` тоже deprecated.
+- `LayerMask.GetMask` / `NameToLayer` нельзя вызывать из статических инициализаторов и конструкторов `MonoBehaviour` — только в `Awake`/`OnEnable`.
 - Не создавай мусор в `Update` (LINQ, new в цикле): это мобилка.
 
 ## Работа с редактором через MCP

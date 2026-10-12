@@ -25,5 +25,15 @@ namespace TankBrawl.Tank
 
         [Tooltip("If the hull is off the stick direction by more than this, the tank turns first and drives after, deg.")]
         [Range(0f, 180f)] public float maxDriveAngle = 60f;
+
+        [Header("Health")]
+        [Tooltip("Balance v0.2: 100 HP. No regeneration.")]
+        [Min(1f)] public float maxHealth = 100f;
+
+        [Tooltip("After a hit the tank ignores further damage for this long, s. Balance v0.2: 0.3")]
+        [Min(0f)] public float hitInvulnerability = 0.3f;
+
+        [Tooltip("Blink period of the sprites while invulnerable, s. Visual only.")]
+        [Min(0.01f)] public float hitBlinkInterval = 0.05f;
     }
 }

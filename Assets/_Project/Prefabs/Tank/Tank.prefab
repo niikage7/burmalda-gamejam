@@ -12,7 +12,11 @@ GameObject:
   - component: {fileID: 7753463542817977535}
   - component: {fileID: 8857805109236720018}
   - component: {fileID: 6070034715100881117}
-  m_Layer: 0
+  - component: {fileID: 7951664778691192360}
+  - component: {fileID: 7330980533943949661}
+  - component: {fileID: 4289164733255231693}
+  - component: {fileID: 2681084728525482842}
+  m_Layer: 6
   m_Name: Tank
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -111,6 +115,58 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TankBrawl.Tank.TankController
   config: {fileID: 0}
+--- !u!114 &7951664778691192360
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 15709209314227761}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: faf406fa527d6434485e64d2756dc9fd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TankBrawl.Tank.TankHealth
+  config: {fileID: 0}
+--- !u!114 &7330980533943949661
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 15709209314227761}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5dda39c8e5daa9f4f86209da131eb68c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TankBrawl.Weapons.TankWeapon
+  weapon: {fileID: 11400000, guid: 0c47cfce71aee8440862ef87e82a9f9b, type: 2}
+--- !u!114 &4289164733255231693
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 15709209314227761}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 87659bbbddf88bd4c9feb0ae58ffe4ef, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TankBrawl.Core.TeamMember
+  team: 1
+--- !u!114 &2681084728525482842
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 15709209314227761}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 796e174c1c55a9f408281a0f3a365ba0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TankBrawl.Tank.TankConcealment
+  ownAlphaInBush: 0.5
 --- !u!1 &294398038448544280
 GameObject:
   m_ObjectHideFlags: 0
