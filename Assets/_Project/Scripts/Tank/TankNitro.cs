@@ -31,6 +31,7 @@ namespace TankBrawl.Tank
         /// <summary>Stock in seconds of boost.</summary>
         public float Current => stock;
 
+        /// <summary>Full stock in seconds of boost (<see cref="NitroConfig.capacity"/>).</summary>
         public float Max => config != null ? config.capacity : 0f;
 
         /// <summary>Stock as 0..1, for a future bar.</summary>

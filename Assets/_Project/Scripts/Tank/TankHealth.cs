@@ -17,12 +17,19 @@ namespace TankBrawl.Tank
         float invulnerableUntil;
         bool spritesShown = true;
 
+        /// <summary>Hit points left, 0..<see cref="Max"/>.</summary>
         public float Current { get; private set; }
+
         public float Max => config.maxHealth;
         public bool IsDead => Current <= 0f;
+
+        /// <summary>Inside the post-hit window: <see cref="TakeDamage"/> is ignored.</summary>
         public bool IsInvulnerable => Time.time < invulnerableUntil;
+
+        /// <inheritdoc/>
         public DamageableKind Kind => DamageableKind.Unit;
 
+        /// <summary>Raised once when HP reaches zero, right before the object is deactivated.</summary>
         public event Action<TankHealth> Died;
 
         void Awake()
@@ -47,11 +54,13 @@ namespace TankBrawl.Tank
             if (config == null)
                 return;
 
+            // Blink: sprites alternate every hitBlinkInterval while the invulnerability lasts.
             float left = invulnerableUntil - Time.time;
             bool show = left <= 0f || (int)(left / config.hitBlinkInterval) % 2 == 0;
             SetSpritesShown(show);
         }
 
+        /// <summary>Takes <see cref="DamageInfo.Amount"/> HP unless dead or invulnerable; kills the tank at zero.</summary>
         public void TakeDamage(in DamageInfo info)
         {
             if (config == null || IsDead || Time.time < invulnerableUntil)

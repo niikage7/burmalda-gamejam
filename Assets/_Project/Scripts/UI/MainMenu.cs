@@ -6,15 +6,18 @@ using UnityEngine.UI;
 namespace TankBrawl.UI
 {
     /// <summary>
-    /// Main menu: one button per entry of <see cref="entries"/>, each loads a scene by name.
+    /// Main menu: one button per entry of <c>entries</c>, each loads a scene by name.
     /// To add a test scene, add an entry here and put the scene into Build Settings.
     /// </summary>
     public class MainMenu : MonoBehaviour
     {
+        /// <summary>One menu button: the caption and the scene it loads.</summary>
         [Serializable]
         public struct Entry
         {
             public string label;
+
+            /// <summary>Scene name as in Build Settings, without path and extension.</summary>
             public string sceneName;
         }
 

@@ -1,0 +1,16 @@
+- name: Архитектура
+  href: architecture.md
+- name: Танк
+  href: tank.md
+- name: Оружие и снаряды
+  href: weapons.md
+- name: Карта
+  href: map.md
+- name: Боты
+  href: bots.md
+- name: Параметры в инспекторе
+  href: inspector.md
+- name: Рецепты
+  href: recipes.md
+- name: Как писать документацию
+  href: writing-docs.md

@@ -15,6 +15,7 @@ namespace TankBrawl.Core
 
         Vector3 velocity;
 
+        /// <summary>What the camera follows. Can be swapped at runtime (e.g. after respawn); null stops the camera.</summary>
         public Transform Target
         {
             get => target;

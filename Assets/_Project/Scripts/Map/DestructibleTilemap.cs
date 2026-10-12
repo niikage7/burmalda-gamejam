@@ -7,8 +7,8 @@ namespace TankBrawl.Map
 {
     /// <summary>
     /// Destructible bricks. Sits on the same object as the tilemap's collider, so projectiles find it through the
-    /// collider they hit. A destroyed brick comes back after <see cref="restoreDelay"/>, blinking for the last
-    /// <see cref="warningDuration"/> seconds; while a tank stands on the cell it waits.
+    /// collider they hit. A destroyed brick comes back after <c>restoreDelay</c>, blinking for the last
+    /// <c>warningDuration</c> seconds; while a tank stands on the cell it waits.
     /// </summary>
     [RequireComponent(typeof(Tilemap))]
     public class DestructibleTilemap : MonoBehaviour, IDamageable
@@ -52,6 +52,7 @@ namespace TankBrawl.Map
         Tilemap tilemap;
         TilemapCollider2D tilemapCollider;
 
+        /// <inheritdoc/>
         public DamageableKind Kind => DamageableKind.Terrain;
 
         void Awake()
@@ -62,6 +63,8 @@ namespace TankBrawl.Map
                 Debug.LogError($"{name}: brick tile is not assigned, nothing will break.", this);
         }
 
+        // Each destroyed brick waits silently, then blinks for warningDuration and comes back.
+        // If a tank stands on the cell at that moment, the brick keeps blinking and retries every retryInterval.
         void Update()
         {
             for (int i = pending.Count - 1; i >= 0; i--)
@@ -86,6 +89,10 @@ namespace TankBrawl.Map
             }
         }
 
+        /// <summary>
+        /// Damages the brick in the cell under <see cref="DamageInfo.Point"/> by <see cref="DamageInfo.BlockDamage"/>.
+        /// A damaged brick gets darker; a broken one disappears and is queued for restoring.
+        /// </summary>
         public void TakeDamage(in DamageInfo info)
         {
             if (info.BlockDamage <= 0 || brickTile == null)

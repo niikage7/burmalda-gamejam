@@ -2,6 +2,7 @@ using UnityEngine;
 
 namespace TankBrawl.Core
 {
+    /// <summary>Side in a match. Tanks of one team do not hurt each other.</summary>
     public enum Team
     {
         Player,
@@ -13,6 +14,7 @@ namespace TankBrawl.Core
     {
         [SerializeField] Team team = Team.Enemy;
 
+        /// <summary>Side of this tank, set in the inspector.</summary>
         public Team Team => team;
     }
 }

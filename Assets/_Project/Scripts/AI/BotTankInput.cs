@@ -7,6 +7,7 @@ using UnityEngine;
 
 namespace TankBrawl.AI
 {
+    /// <summary>What a <see cref="BotTankInput"/> is doing now. Shown in the inspector for debugging.</summary>
     public enum BotState
     {
         /// <summary>No target.</summary>
@@ -85,12 +86,21 @@ namespace TankBrawl.AI
         float reverseUntil;
         Vector2 reverseDirection;
 
+        /// <inheritdoc/>
         public Vector2 Move => move;
+
+        /// <inheritdoc/>
         public bool FireHeld => fire;
+
+        /// <inheritdoc/>
         public bool NitroHeld => nitroHeld;
+
+        /// <inheritdoc/>
         public bool CycleAmmoPressed => false;
 
         public BotState State { get; private set; }
+
+        /// <summary>Enemy the bot is after now; null when there is none.</summary>
         public TeamMember Target => target;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]

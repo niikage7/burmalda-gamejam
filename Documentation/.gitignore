@@ -1,0 +1,5 @@
+# Всё ниже генерируется build.sh / build.cmd
+_site/
+obj/
+api/
+articles/inspector.md

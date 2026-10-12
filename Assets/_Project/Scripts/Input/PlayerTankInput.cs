@@ -12,9 +12,13 @@ namespace TankBrawl.Input
         [SerializeField] InputActionReference nitroAction;
         [SerializeField] InputActionReference cycleAmmoAction;
 
+        /// <inheritdoc/>
         public Vector2 Move => moveAction.action.ReadValue<Vector2>();
+        /// <inheritdoc/>
         public bool FireHeld => fireAction.action.IsPressed();
+        /// <inheritdoc/>
         public bool NitroHeld => nitroAction.action.IsPressed();
+        /// <inheritdoc/>
         public bool CycleAmmoPressed => cycleAmmoAction.action.WasPressedThisFrame();
 
         void OnEnable()

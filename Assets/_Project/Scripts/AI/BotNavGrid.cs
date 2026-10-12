@@ -54,6 +54,8 @@ namespace TankBrawl.AI
         bool[] solidCells;
         bool[] brickCells;
 
+        // A* scratch arrays, one slot per node. Instead of clearing them before every search, each search gets
+        // a new stamp: a slot counts as open/closed only if its stamp matches the current search.
         float[] gScore;
         int[] parent;
         int[] openStamp;
@@ -326,6 +328,7 @@ namespace TankBrawl.AI
                    && !IsCellBlocked(vx - 1, vy) && !IsCellBlocked(vx, vy);
         }
 
+        // A wall within one cell of the tank's 2×2 footprint around node (vx, vy).
         bool IsNearWall(int vx, int vy)
         {
             for (int y = vy - 2; y <= vy + 1; y++)

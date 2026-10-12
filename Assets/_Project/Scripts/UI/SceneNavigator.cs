@@ -10,6 +10,7 @@ namespace TankBrawl.UI
     /// </summary>
     public class SceneNavigator : MonoBehaviour
     {
+        /// <summary>Name of the menu scene; it must be in Build Settings.</summary>
         public const string MenuSceneName = "Menu";
 
         static SceneNavigator instance;

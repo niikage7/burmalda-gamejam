@@ -17,6 +17,7 @@ namespace TankBrawl.Weapons
         ITankInput input;
         float nextFireTime;
 
+        /// <summary>Projectile type this weapon fires now.</summary>
         public WeaponConfig Config => weapon;
 
         /// <summary>Raised right after a shot is fired.</summary>
