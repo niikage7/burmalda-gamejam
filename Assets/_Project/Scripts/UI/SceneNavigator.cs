@@ -31,18 +31,22 @@ namespace TankBrawl.UI
             instance = host.AddComponent<SceneNavigator>();
         }
 
-        void Update()
+        /// <summary>The "back" action: from any scene to the menu, in the menu quits the app.</summary>
+        public static void GoBack()
         {
-            Keyboard keyboard = Keyboard.current;
-            if (keyboard == null || !keyboard.escapeKey.wasPressedThisFrame)
-                return;
-
             if (SceneManager.GetActiveScene().name == MenuSceneName)
                 Application.Quit();
             else if (Application.CanStreamedLevelBeLoaded(MenuSceneName))
                 SceneManager.LoadScene(MenuSceneName);
             else
                 Debug.LogWarning($"Scene '{MenuSceneName}' is not in Build Settings, cannot go back to the menu.");
+        }
+
+        void Update()
+        {
+            Keyboard keyboard = Keyboard.current;
+            if (keyboard != null && keyboard.escapeKey.wasPressedThisFrame)
+                GoBack();
         }
     }
 }
