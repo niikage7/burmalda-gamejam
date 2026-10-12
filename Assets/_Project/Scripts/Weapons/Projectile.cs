@@ -59,6 +59,13 @@ namespace TankBrawl.Weapons
             solidFilterReady = false;
         }
 
+        /// <summary>Removes every projectile in flight without exploding it (a new round starts).</summary>
+        public static void ClearAll()
+        {
+            for (int i = Active.Count - 1; i >= 0; i--)
+                Active[i].Finish();
+        }
+
         void OnEnable()
         {
             if (!solidFilterReady)

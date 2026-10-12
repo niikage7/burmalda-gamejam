@@ -35,5 +35,8 @@ namespace TankBrawl.Tank
 
         [Tooltip("Blink period of the sprites while invulnerable, s. Visual only.")]
         [Min(0.01f)] public float hitBlinkInterval = 0.05f;
+
+        [Tooltip("Blink period of the sprites during spawn protection (slower than the hit blink, so the two read differently), s. Visual only.")]
+        [Min(0.01f)] public float spawnBlinkInterval = 0.15f;
     }
 }

@@ -871,6 +871,8 @@ MonoBehaviour:
     sceneName: PowerUps
   - label: "\u0422\u043E\u0447\u043A\u0430 3\xD73"
     sceneName: Point
+  - label: "\u041C\u0430\u0442\u0447 3 \u043D\u0430 3"
+    sceneName: Match
   buttonTemplate: {fileID: 153421395}
   container: {fileID: 272859518}
 --- !u!4 &1260477464

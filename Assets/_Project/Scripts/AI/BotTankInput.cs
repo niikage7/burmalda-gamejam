@@ -98,6 +98,7 @@ namespace TankBrawl.AI
         Transform targetTransform;
         Rigidbody2D targetBody;
         TankConcealment targetConcealment;
+        TankHealth targetHealth;
         Vector2 targetPosition;
         float targetDistance;
         float retargetAt;
@@ -264,6 +265,7 @@ namespace TankBrawl.AI
             targetTransform = null;
             targetBody = null;
             targetConcealment = null;
+            targetHealth = null;
             retargetAt = 0f;
             nextPerceptionAt = 0f;
             targetVisible = hasLineOfSight = directClear = hasLastKnown = false;
@@ -365,10 +367,12 @@ namespace TankBrawl.AI
             targetTransform = newTarget != null ? newTarget.transform : null;
             targetBody = null;
             targetConcealment = null;
+            targetHealth = null;
             if (newTarget != null)
             {
                 newTarget.TryGetComponent(out targetBody);
                 newTarget.TryGetComponent(out targetConcealment);
+                newTarget.TryGetComponent(out targetHealth);
             }
 
             targetVisible = hasLineOfSight = directClear = hasLastKnown = false;
@@ -616,10 +620,14 @@ namespace TankBrawl.AI
             nextStrafeSwitchAt = now + Random.Range(profile.strafeSwitchMin, profile.strafeSwitchMax);
         }
 
+        // A freshly respawned target is immune: shooting at it only wastes the shell.
+        bool TargetProtected => targetHealth != null && targetHealth.HasSpawnProtection;
+
         // Fire when the hull points at the aim point, the reaction delay has passed and steel is not right in front of the muzzle.
         bool CanFire(float now, Vector2 position, Vector2 aim)
         {
             return now >= reactionReadyAt
+                   && !TargetProtected
                    && Vector2.Angle(tank.Forward, aim) <= profile.fireAlignTolerance
                    && !SteelTooClose(position);
         }
@@ -638,7 +646,7 @@ namespace TankBrawl.AI
         // Starts a ram: nitro and a clear straight way, the target close, the hull already pointing at it, and the dice (aggression).
         bool WantsRam(float now, Vector2 position)
         {
-            if (nitro == null || nitro.IsLocked || profile.nitroRamDistance <= 0f || now < nextRamAt)
+            if (nitro == null || nitro.IsLocked || profile.nitroRamDistance <= 0f || now < nextRamAt || TargetProtected)
                 return false;
             if (!directClear || targetDistance > profile.nitroRamDistance || nitro.Normalized < profile.nitroStartStock)
                 return false;

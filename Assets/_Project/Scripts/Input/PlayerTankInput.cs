@@ -20,6 +20,9 @@ namespace TankBrawl.Input
 
         void OnEnable()
         {
+            if (TryGetComponent(out TeamMember member))
+                TeamMember.LocalTeam = member.Team;
+
             moveAction.action.Enable();
             fireAction.action.Enable();
             nitroAction.action.Enable();

@@ -94,6 +94,7 @@ namespace TankBrawl.Tank
         void OnDisable()
         {
             knockbackLeft = 0f;
+            currentSpeed = 0f;
             SpeedMultiplier = 1f;
         }
 
