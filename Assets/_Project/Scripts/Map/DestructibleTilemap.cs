@@ -8,8 +8,8 @@ namespace TankBrawl.Map
     /// <summary>
     /// Destructible bricks, one whole block per cell. Sits on the same object as the tilemap's collider, so projectiles
     /// find it through the collider they hit. A damaged block swaps to the matching tile of <see cref="damagedTiles"/>.
-    /// A destroyed block comes back after <see cref="restoreDelay"/>, blinking for the last
-    /// <see cref="warningDuration"/> seconds; while a tank stands on the cell it waits.
+    /// A destroyed block leaves rubble and comes back after <see cref="restoreDelay"/>, blinking between the block and
+    /// the rubble for the last <see cref="warningDuration"/> seconds; while a tank stands on the cell it waits.
     /// Looks are never tinted from code: every state is a tile, so a restored block is exactly the default one.
     /// </summary>
     [RequireComponent(typeof(Tilemap))]
@@ -44,7 +44,10 @@ namespace TankBrawl.Map
         [Tooltip("How often a brick blocked by a tank retries, s.")]
         [SerializeField, Min(0.02f)] float retryInterval = 0.25f;
 
-        [Tooltip("Render-only tilemap (child) that shows the blinking brick. Optional.")]
+        [Tooltip("Rubble shown in the empty cell while the block is gone. Optional.")]
+        [SerializeField] TileBase rubbleTile;
+
+        [Tooltip("Render-only tilemap (child, no collider) that shows the rubble and the blinking brick. Optional.")]
         [SerializeField] Tilemap warningTilemap;
 
         [Tooltip("Layers whose colliders keep a brick from coming back (tanks).")]
@@ -106,6 +109,8 @@ namespace TankBrawl.Map
                 damageTaken.Remove(cell);
                 tilemap.SetTile(cell, null);
                 RebuildCollider();
+                if (warningTilemap != null)
+                    warningTilemap.SetTile(cell, rubbleTile);
                 pending.Add(new PendingBrick { Cell = cell, RestoreAt = Time.time + restoreDelay });
                 return;
             }
@@ -125,7 +130,7 @@ namespace TankBrawl.Map
             return Physics2D.OverlapBox(tilemap.GetCellCenterWorld(cell), size, 0f, blockers) != null;
         }
 
-        // Blinks by toggling the tile itself, so the blink shows the block's real colours.
+        // Blinks by swapping the tile itself (block / rubble), so the blink shows the block's real colours.
         void ShowWarning(ref PendingBrick brick)
         {
             if (warningTilemap == null)
@@ -137,7 +142,7 @@ namespace TankBrawl.Map
 
             brick.WarningShown = true;
             brick.BlinkOn = on;
-            warningTilemap.SetTile(brick.Cell, on ? brickTile : null);
+            warningTilemap.SetTile(brick.Cell, on ? brickTile : rubbleTile);
         }
 
         void Restore(Vector3Int cell)
