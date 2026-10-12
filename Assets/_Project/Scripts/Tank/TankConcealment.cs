@@ -26,13 +26,16 @@ namespace TankBrawl.Tank
         /// <summary>True when this tank stands in a bush (for any observer).</summary>
         public bool InBush => inBush;
 
+        /// <summary>Opacity the player sees this tank with: 1 outside bushes, translucent for the player's own tank, 0 for enemies.</summary>
+        public float VisibilityAlpha => !inBush ? 1f : (member.Team == Team.Player ? ownAlphaInBush : 0f);
+
         /// <summary>True when this tank stands in a bush and <paramref name="observer"/> belongs to the other team.</summary>
         public bool IsHiddenFrom(Team observer) => inBush && member.Team != observer;
 
         void Awake()
         {
             member = GetComponent<TeamMember>();
-            renderers = GetComponentsInChildren<SpriteRenderer>();
+            renderers = TankHealthBar.FindTankRenderers(this);
             baseColors = new Color[renderers.Length];
             for (int i = 0; i < renderers.Length; i++)
                 baseColors[i] = renderers[i].color;
@@ -52,8 +55,7 @@ namespace TankBrawl.Tank
                 return;
 
             inBush = now;
-            float alpha = !inBush ? 1f : (member.Team == Team.Player ? ownAlphaInBush : 0f);
-            ApplyAlpha(alpha);
+            ApplyAlpha(VisibilityAlpha);
         }
 
         void ApplyAlpha(float alpha)

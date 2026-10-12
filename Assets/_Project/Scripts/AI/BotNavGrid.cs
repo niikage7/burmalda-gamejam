@@ -23,6 +23,7 @@ namespace TankBrawl.AI
         }
 
         const float DiagonalCost = 1.41421356f;
+        const int RandomPointAttempts = 30;
 
         static readonly int[] StepX = { 1, -1, 0, 0, 1, 1, -1, -1 };
         static readonly int[] StepY = { 0, 0, 1, -1, 1, -1, 1, -1 };
@@ -175,6 +176,66 @@ namespace TankBrawl.AI
             }
 
             return true;
+        }
+
+        /// <summary>
+        /// A random free cell centre whose distance from <paramref name="from"/> lies in [minDistance, maxDistance].
+        /// Tries a limited number of cells, so it can fail on a small map. Does not check that the point is reachable.
+        /// </summary>
+        public bool TryGetRandomPoint(Vector2 from, float minDistance, float maxDistance, out Vector2 point)
+        {
+            point = default;
+            if (!EnsureBuilt())
+                return false;
+
+            float minSqr = minDistance * minDistance;
+            float maxSqr = maxDistance * maxDistance;
+            for (int attempt = 0; attempt < RandomPointAttempts; attempt++)
+            {
+                int vx = UnityEngine.Random.Range(0, cellsW);
+                int vy = UnityEngine.Random.Range(0, cellsH);
+                if (!IsNodeFree(vx, vy))
+                    continue;
+
+                Vector2 candidate = NodeWorld(vx, vy);
+                float sqr = (candidate - from).sqrMagnitude;
+                if (sqr < minSqr || sqr > maxSqr)
+                    continue;
+
+                point = candidate;
+                return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// A random free cell centre inside the ring [minRadius, maxRadius] around <paramref name="center"/>, sampled in the ring
+        /// itself (so it works for a small zone on a big map). Does not check that the point is reachable.
+        /// </summary>
+        public bool TryGetPointAround(Vector2 center, float minRadius, float maxRadius, out Vector2 point)
+        {
+            point = default;
+            if (!EnsureBuilt())
+                return false;
+
+            for (int attempt = 0; attempt < RandomPointAttempts; attempt++)
+            {
+                float angle = UnityEngine.Random.value * Mathf.PI * 2f;
+                float distance = Mathf.Sqrt(UnityEngine.Random.Range(minRadius * minRadius, maxRadius * maxRadius));
+                Vector2 sample = center + new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * distance;
+
+                Vector2 local = sample - worldOrigin;
+                int vx = Mathf.FloorToInt(local.x / cellSize.x);
+                int vy = Mathf.FloorToInt(local.y / cellSize.y);
+                if (!IsNodeFree(vx, vy))
+                    continue;
+
+                point = NodeWorld(vx, vy);
+                return true;
+            }
+
+            return false;
         }
 
         bool EnsureBuilt()

@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using TankBrawl.Core;
 using TankBrawl.Map;
+using TankBrawl.PowerUps;
 using TankBrawl.Tank;
 using TankBrawl.Weapons;
 using UnityEngine;
@@ -9,24 +10,38 @@ namespace TankBrawl.AI
 {
     public enum BotState
     {
-        /// <summary>No target.</summary>
-        Idle,
+        /// <summary>No enemy to go for: wanders between random points of the map.</summary>
+        Patrol,
 
-        /// <summary>Goes along a path to the target or to where it was last seen.</summary>
-        Chase,
+        /// <summary>Goes along a path to where the enemy is (or was last seen), or to a power-up.</summary>
+        Seek,
 
-        /// <summary>Sees the target within shooting range: aims, shoots, closes in to the stop distance.</summary>
-        Engage
+        /// <summary>Has a clear shot within range: circles the target at its preferred distance, turns to aim when the gun is about to be ready.</summary>
+        Attack,
+
+        /// <summary>A rush on nitro into the target at close range.</summary>
+        Ram,
+
+        /// <summary>Low health: runs to a power-up or to cover out of the enemy's sight.</summary>
+        Retreat,
+
+        /// <summary>A holder in a scene with a flag zone, without a clear shot: goes into the zone and wanders inside it.</summary>
+        Hold,
+
+        /// <summary>A short side step away from an incoming shot. Interrupts any other state; <see cref="BotTankInput.State"/> reports it while it lasts.</summary>
+        Dodge
     }
 
     /// <summary>
     /// Drives a tank like a player would: only through <see cref="ITankInput"/>, so the tank has the same limits
-    /// (the gun looks where the hull looks, the weapon has its cooldown). Chases the nearest enemy, shoots when the
-    /// line of sight is clear, cannot see enemies standing in bushes, and backs off when stuck.
+    /// (the gun looks where the hull looks, the weapon has its cooldown, bushes hide enemies from it).
+    /// A small FSM (Patrol / Seek / Attack / Ram / Retreat) decides every <see cref="BotProfile.decisionInterval"/> seconds;
+    /// steering and shooting run every frame; Dodge interrupts everything. Parts: this file (core, attack, ram, patrol,
+    /// paths), BotTankInput.Dodge.cs, BotTankInput.Retreat.cs (retreat and power-ups).
     /// </summary>
     [RequireComponent(typeof(Rigidbody2D), typeof(TankController), typeof(TankWeapon))]
     [RequireComponent(typeof(TeamMember))]
-    public class BotTankInput : MonoBehaviour, ITankInput
+    public partial class BotTankInput : MonoBehaviour, ITankInput
     {
         const int MaxWallHits = 4;
 
@@ -35,6 +50,24 @@ namespace TankBrawl.AI
 
         // Bots share one list of all tanks instead of each scanning the scene.
         const float CandidateRefreshInterval = 0.5f;
+
+        // Decisions of different bots should not all land on the same frame: the interval is randomised by this share.
+        const float DecisionJitter = 0.15f;
+
+        // Closer than this to the last known place of an enemy that is out of sight = arrived, the trail ends.
+        const float ArriveDistance = 1f;
+
+        // While circling, the bot looks this far ahead for a wall and turns the other way if there is one.
+        const float StrafeProbeDistance = 1.2f;
+
+        // A ram is dropped if the target gets farther than this multiple of the ram distance.
+        const float RamAbortDistanceFactor = 1.5f;
+
+        // How the circling is steered: with the pull to the preferred distance, pure circling (a wall is in the way
+        // of the pull), or straight at the target (everything else is blocked).
+        const int StrafeNormal = 0;
+        const int StrafeCircleOnly = 1;
+        const int StrafeCloseIn = 2;
 
         static readonly List<TeamMember> Candidates = new List<TeamMember>();
         static float candidatesRefreshAt;
@@ -46,18 +79,22 @@ namespace TankBrawl.AI
         TankWeapon weapon;
         TeamMember member;
         BotNavGrid nav;
+        TankNitro nitro;
+        TankHealth health;
+        TankPowerUps powerUps;
+        float bodyRadius;
         ContactFilter2D wallFilter;
         readonly RaycastHit2D[] wallHits = new RaycastHit2D[MaxWallHits];
         readonly List<Vector2> path = new List<Vector2>();
-
-        TankNitro nitro;
 
         Vector2 move;
         bool fire;
         bool nitroHeld;
         float turnOnlyMagnitude;
+        float driveThresholdSqr;
 
         TeamMember target;
+        float targetSetAt;
         Transform targetTransform;
         Rigidbody2D targetBody;
         TankConcealment targetConcealment;
@@ -73,7 +110,28 @@ namespace TankBrawl.AI
         Vector2 lastKnownPosition;
         float aimOffsetDegrees;
 
+        BotState baseState;
+        float nextDecisionAt;
+
+        // Attack
+        float strafeSign = 1f;
+        int strafeRadialMode = StrafeNormal;
+        float nextStrafeSwitchAt;
+
+        // Ram
+        float ramStartedAt;
+        float nextRamAt;
+
+        // Seek is skipped until this time after the way to the enemy turned out to be blocked
+        float seekBlockedUntil;
+
+        // Patrol
+        bool hasPatrolPoint;
+        Vector2 patrolPoint;
+        float patrolPickedAt;
+
         bool hasPath;
+        bool pathFailed;
         int pathIndex;
         int pathVersion;
         Vector2 pathGoal;
@@ -91,7 +149,9 @@ namespace TankBrawl.AI
         public bool NitroHeld => nitroHeld;
         public bool CycleAmmoPressed => false;
 
-        public BotState State { get; private set; }
+        /// <summary>What the bot is doing now; <see cref="BotState.Dodge"/> while a dodge interrupts the FSM.</summary>
+        public BotState State => dodging ? BotState.Dodge : baseState;
+
         public TeamMember Target => target;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
@@ -108,6 +168,10 @@ namespace TankBrawl.AI
             weapon = GetComponent<TankWeapon>();
             member = GetComponent<TeamMember>();
             TryGetComponent(out nitro);
+            TryGetComponent(out health);
+            TryGetComponent(out powerUps);
+
+            bodyRadius = TryGetComponent(out CircleCollider2D circle) ? circle.radius * Mathf.Max(transform.lossyScale.x, transform.lossyScale.y) : 0.45f;
 
             wallFilter = new ContactFilter2D();
             wallFilter.useTriggers = false;
@@ -125,7 +189,10 @@ namespace TankBrawl.AI
                 Debug.LogError($"{name}: no BotNavGrid in the scene, the bot will drive straight at its target.", this);
 
             if (tank.Config != null)
+            {
                 turnOnlyMagnitude = tank.Config.driveThreshold * TurnOnlyScale;
+                driveThresholdSqr = tank.Config.driveThreshold * tank.Config.driveThreshold;
+            }
 
             weapon.Fired += OnFired;
             ResetState();
@@ -134,6 +201,7 @@ namespace TankBrawl.AI
         void OnDisable()
         {
             weapon.Fired -= OnFired;
+            ReleasePickup();
             Stop();
         }
 
@@ -156,6 +224,13 @@ namespace TankBrawl.AI
 
             Perceive(now, position);
 
+            // A shot flying at the hull beats everything else.
+            if (UpdateDodge(now, position))
+            {
+                UpdateStuck(now, position, true);
+                return;
+            }
+
             if (now < reverseUntil)
             {
                 move = reverseDirection;
@@ -165,7 +240,13 @@ namespace TankBrawl.AI
                 return;
             }
 
-            bool drives = Think(now, position);
+            if (now >= nextDecisionAt)
+            {
+                nextDecisionAt = now + profile.decisionInterval * Random.Range(1f - DecisionJitter, 1f + DecisionJitter);
+                Decide(now, position);
+            }
+
+            bool drives = Act(now, position);
             UpdateStuck(now, position, drives);
         }
 
@@ -177,7 +258,8 @@ namespace TankBrawl.AI
         void ResetState()
         {
             Stop();
-            State = BotState.Idle;
+            baseState = BotState.Patrol;
+            nextDecisionAt = 0f;
             target = null;
             targetTransform = null;
             targetBody = null;
@@ -186,9 +268,19 @@ namespace TankBrawl.AI
             nextPerceptionAt = 0f;
             targetVisible = hasLineOfSight = directClear = hasLastKnown = false;
             hasPath = false;
+            pathFailed = false;
             nextRepathAt = 0f;
             stuckWindowOpen = false;
             reverseUntil = 0f;
+            hasPatrolPoint = false;
+            seekBlockedUntil = 0f;
+            nextRamAt = 0f;
+            strafeSign = Random.value < 0.5f ? -1f : 1f;
+            strafeRadialMode = StrafeNormal;
+            nextStrafeSwitchAt = 0f;
+            ResetDodge();
+            ResetRetreat();
+            ResetHold();
             RollAim();
         }
 
@@ -216,6 +308,11 @@ namespace TankBrawl.AI
             Candidates.AddRange(FindObjectsByType<TeamMember>(FindObjectsInactive.Exclude));
         }
 
+        // The nearest enemy that the bot can see (an enemy standing in a bush is not a candidate: the bot would otherwise know
+        // where it is). With several enemies the bot sticks to its target: it switches only after targetHoldTime and only to
+        // an enemy clearly closer (retargetDistanceRatio), so it does not flip between two enemies at similar distances.
+        // A target that went into a bush is dropped for any visible enemy; if nobody is visible, the bot keeps it and
+        // goes to where it was last seen.
         void PickTarget(Vector2 position)
         {
             RefreshCandidates();
@@ -228,6 +325,9 @@ namespace TankBrawl.AI
                 if (candidate == null || candidate.Team == member.Team || !candidate.gameObject.activeInHierarchy)
                     continue;
 
+                if (candidate.TryGetComponent(out TankConcealment hiding) && hiding.IsHiddenFrom(member.Team))
+                    continue;
+
                 float sqr = ((Vector2)candidate.transform.position - position).sqrMagnitude;
                 if (sqr < bestSqr)
                 {
@@ -236,12 +336,31 @@ namespace TankBrawl.AI
                 }
             }
 
-            if (best != target)
-                SetTarget(best);
+            bool currentAlive = target != null && target.gameObject.activeInHierarchy;
+            if (best == null)
+            {
+                if (!currentAlive)
+                    SetTarget(null);
+                return;
+            }
+
+            if (best == target)
+                return;
+
+            if (currentAlive && targetVisible)
+            {
+                bool held = Time.time - targetSetAt >= profile.targetHoldTime;
+                float currentDistance = Vector2.Distance(position, target.transform.position);
+                if (!held || Mathf.Sqrt(bestSqr) >= currentDistance * profile.retargetDistanceRatio)
+                    return;
+            }
+
+            SetTarget(best);
         }
 
         void SetTarget(TeamMember newTarget)
         {
+            targetSetAt = Time.time;
             target = newTarget;
             targetTransform = newTarget != null ? newTarget.transform : null;
             targetBody = null;
@@ -308,65 +427,293 @@ namespace TankBrawl.AI
             return count == 0;
         }
 
-        // ---- Decisions ----
+        // ---- Decisions (every decisionInterval) ----
 
-        // Sets move/fire for this frame. Returns true when the bot wants to drive (used to detect being stuck).
-        bool Think(float now, Vector2 position)
+        void Decide(float now, Vector2 position)
         {
-            bool nitroWasOn = nitroHeld;
+            BotState previous = baseState;
+            baseState = ChooseState(now, position);
+            if (baseState == previous)
+            {
+                if (baseState == BotState.Attack)
+                    UpdateStrafe(now, position);
+                return;
+            }
+
+            // The goal changes with the state, so the old path is useless.
+            InvalidatePath();
+            if (baseState == BotState.Attack)
+            {
+                ScheduleStrafeSwitch(now);
+                UpdateStrafe(now, position);
+            }
+        }
+
+        BotState ChooseState(float now, Vector2 position)
+        {
+            // Retreat and ram are sticky: once begun they run until their own end conditions.
+            if (baseState == BotState.Retreat)
+            {
+                if (ContinueRetreat(now, position))
+                    return BotState.Retreat;
+                EndRetreat(now);
+            }
+            else if (ShouldRetreat(now) && BeginRetreat(now, position))
+            {
+                return BotState.Retreat;
+            }
+
+            if (baseState == BotState.Ram)
+            {
+                if (ContinueRam(now))
+                    return BotState.Ram;
+                nextRamAt = now + profile.ramCooldown;
+            }
+
+            bool canShoot = target != null && hasLineOfSight && targetDistance <= profile.fireRange;
+
+            if (UpdatePowerUpGoal(now, position, canShoot))
+                return BotState.Seek;
+
+            if (canShoot)
+            {
+                if (WantsRam(now, position))
+                {
+                    ramStartedAt = now;
+                    return BotState.Ram;
+                }
+
+                return BotState.Attack;
+            }
+
+            // A holder in a scene with a flag zone stays at the point instead of chasing.
+            if (WantsToHold)
+                return BotState.Hold;
+
+            if (hasLastKnown && now >= seekBlockedUntil)
+            {
+                // The enemy is out of sight and the bot has reached where it was last seen: the trail ends.
+                if (!targetVisible && (lastKnownPosition - position).sqrMagnitude < ArriveDistance * ArriveDistance)
+                    hasLastKnown = false;
+                else
+                    return BotState.Seek;
+            }
+
+            return BotState.Patrol;
+        }
+
+        // ---- Acting (every frame) ----
+
+        // Sets move/fire/nitro for this frame. Returns true when the bot wants to drive (used to detect being stuck).
+        bool Act(float now, Vector2 position)
+        {
             move = Vector2.zero;
             fire = false;
             nitroHeld = false;
 
-            if (target != null && hasLineOfSight && targetDistance <= profile.fireRange)
+            switch (baseState)
             {
-                State = BotState.Engage;
-                Vector2 aim = AimDirection(position);
-
-                // Ramming drives into the target instead of stopping at stopDistance.
-                nitroHeld = WantsRam(nitroWasOn, position);
-                bool close = targetDistance <= profile.stopDistance && !nitroHeld;
-
-                Vector2 heading = aim;
-                if (!close && !directClear)
-                {
-                    Vector2 along = PathHeading(now, position, targetPosition);
-                    if (along != Vector2.zero)
-                        heading = along;
-                }
-
-                move = close ? heading * turnOnlyMagnitude : heading;
-
-                bool aligned = Vector2.Angle(tank.Forward, aim) <= profile.fireAlignTolerance;
-                fire = aligned && now >= reactionReadyAt && !SteelTooClose(position);
-                return !close;
+                case BotState.Attack:
+                    return target != null && ActAttack(now, position);
+                case BotState.Ram:
+                    return target != null && ActRam(now, position);
+                case BotState.Retreat:
+                    return ActRetreat(now, position);
+                case BotState.Hold:
+                    return ActHold(now, position);
+                case BotState.Seek:
+                    return ActSeek(now, position);
+                default:
+                    return ActPatrol(now, position);
             }
-
-            if (hasLastKnown)
-            {
-                State = BotState.Chase;
-                move = PathHeading(now, position, lastKnownPosition);
-                return move != Vector2.zero;
-            }
-
-            State = BotState.Idle;
-            return false;
         }
 
-        // Nitro on while the target is in ram range with a clear straight way. Starts only with a good stock and a
-        // matching hull direction; once on, stays on until the stock runs low (hysteresis, so it does not flicker).
-        bool WantsRam(bool wasOn, Vector2 position)
+        bool ActAttack(float now, Vector2 position)
         {
-            if (nitro == null || nitro.IsLocked || profile.nitroRamDistance <= 0f)
+            Vector2 aim = AimDirection(position);
+
+            // The laser burns while the beam points at the target, so a laser tank keeps aiming and closing in.
+            bool laser = weapon.Suppressed;
+            bool aiming = laser || weapon.CooldownLeft <= profile.aimLeadTime;
+
+            if (aiming)
+            {
+                if (targetDistance > profile.preferredDistance + profile.distanceBand)
+                    move = directClear ? aim : WithFallback(PathHeading(now, position, targetPosition), aim);
+                else
+                    move = laser && targetDistance > profile.preferredDistance ? aim : aim * turnOnlyMagnitude;
+            }
+            else
+            {
+                move = PullToPoint(position, CircleHeading((targetPosition - position) / Mathf.Max(targetDistance, Mathf.Epsilon)));
+            }
+
+            fire = CanFire(now, position, aim);
+            return move.sqrMagnitude >= driveThresholdSqr;
+        }
+
+        // The gun is fixed along the hull, so circling means driving at an angle to the target and turning to it only to shoot.
+        // The radial part pulls the bot to the preferred distance (blended over the distance band).
+        Vector2 CircleHeading(Vector2 toTarget)
+        {
+            Vector2 tangent = new Vector2(-toTarget.y, toTarget.x) * strafeSign;
+            float bias = Mathf.Clamp((targetDistance - profile.preferredDistance) / profile.distanceBand, -1f, 1f);
+            if (strafeRadialMode == StrafeCircleOnly)
+                bias = 0f;
+            else if (strafeRadialMode == StrafeCloseIn)
+                bias = 1f;
+            return (tangent + toTarget * bias).normalized;
+        }
+
+        // Keeps the circling direction for a while, but a wall ahead changes the plan: first the other side, then circling
+        // without the pull towards the preferred distance, and when everything is blocked, closing in.
+        void UpdateStrafe(float now, Vector2 position)
+        {
+            if (target == null)
+                return;
+
+            if (now >= nextStrafeSwitchAt)
+            {
+                strafeSign = -strafeSign;
+                ScheduleStrafeSwitch(now);
+            }
+
+            if (nav == null)
+                return;
+
+            // The preferred plan first (circle with the pull to the preferred distance).
+            Vector2 toTarget = (targetPosition - position) / Mathf.Max(targetDistance, Mathf.Epsilon);
+            strafeRadialMode = StrafeNormal;
+            if (IsStrafeFree(position, toTarget))
+                return;
+
+            // Then: the other side; the same side without the pull; the other side without the pull.
+            float sign = strafeSign;
+            for (int attempt = 0; attempt < 3; attempt++)
+            {
+                strafeSign = attempt == 1 ? sign : -sign;
+                strafeRadialMode = attempt == 0 ? StrafeNormal : StrafeCircleOnly;
+                if (IsStrafeFree(position, toTarget))
+                {
+                    ScheduleStrafeSwitch(now);
+                    return;
+                }
+            }
+
+            // Nothing is free: the only way out is towards the target.
+            strafeSign = sign;
+            strafeRadialMode = StrafeCloseIn;
+        }
+
+        bool IsStrafeFree(Vector2 position, Vector2 toTarget)
+        {
+            Vector2 heading = CircleHeading(toTarget);
+            return nav.IsSegmentWalkable(position, position + heading * StrafeProbeDistance);
+        }
+
+        void ScheduleStrafeSwitch(float now)
+        {
+            nextStrafeSwitchAt = now + Random.Range(profile.strafeSwitchMin, profile.strafeSwitchMax);
+        }
+
+        // Fire when the hull points at the aim point, the reaction delay has passed and steel is not right in front of the muzzle.
+        bool CanFire(float now, Vector2 position, Vector2 aim)
+        {
+            return now >= reactionReadyAt
+                   && Vector2.Angle(tank.Forward, aim) <= profile.fireAlignTolerance
+                   && !SteelTooClose(position);
+        }
+
+        // Shoots while doing something else (driving to a power-up, running away) when the hull happens to point at the target.
+        void TryOpportunisticFire(float now, Vector2 position)
+        {
+            if (target == null || !targetVisible || !hasLineOfSight || targetDistance > profile.fireRange)
+                return;
+
+            fire = CanFire(now, position, AimDirection(position));
+        }
+
+        // ---- Ram ----
+
+        // Starts a ram: nitro and a clear straight way, the target close, the hull already pointing at it, and the dice (aggression).
+        bool WantsRam(float now, Vector2 position)
+        {
+            if (nitro == null || nitro.IsLocked || profile.nitroRamDistance <= 0f || now < nextRamAt)
                 return false;
-            if (!directClear || targetDistance > profile.nitroRamDistance)
+            if (!directClear || targetDistance > profile.nitroRamDistance || nitro.Normalized < profile.nitroStartStock)
+                return false;
+            if (Vector2.Angle(tank.Forward, targetPosition - position) > profile.nitroAlignTolerance)
                 return false;
 
-            if (wasOn)
-                return nitro.Normalized > profile.nitroStopStock;
+            return Random.value < profile.aggression;
+        }
 
-            return nitro.Normalized >= profile.nitroStartStock
-                   && Vector2.Angle(tank.Forward, targetPosition - position) <= profile.nitroAlignTolerance;
+        bool ContinueRam(float now)
+        {
+            return nitro != null && !nitro.IsLocked && nitro.Normalized > profile.nitroStopStock
+                   && target != null && targetVisible && directClear
+                   && targetDistance <= profile.nitroRamDistance * RamAbortDistanceFactor
+                   && now - ramStartedAt < profile.ramMaxDuration;
+        }
+
+        // Straight at the target. Nitro goes on only while the hull points at it, so the bot never revs on the spot.
+        bool ActRam(float now, Vector2 position)
+        {
+            Vector2 heading = (targetPosition - position).normalized;
+            move = heading;
+            nitroHeld = nitro != null && Vector2.Angle(tank.Forward, heading) <= profile.nitroAlignTolerance;
+            fire = CanFire(now, position, AimDirection(position));
+            return true;
+        }
+
+        // ---- Seek and Patrol ----
+
+        bool ActSeek(float now, Vector2 position)
+        {
+            // A pick-up taken by someone else a moment ago: wait for the next decision.
+            if (pickupGoal == null && !hasLastKnown)
+                return false;
+
+            Vector2 goal = pickupGoal != null ? (Vector2)pickupGoal.transform.position : lastKnownPosition;
+            move = PathHeading(now, position, goal);
+            TryOpportunisticFire(now, position);
+
+            // No way to the goal (the enemy sits in a pocket the map does not connect): do not stand and wait, patrol for a while.
+            if (move == Vector2.zero && pathFailed)
+            {
+                if (pickupGoal != null)
+                {
+                    MarkUnreachable(now, pickupGoal);
+                    ReleasePickup();
+                }
+                else
+                {
+                    seekBlockedUntil = now + UnreachableForgetTime;
+                }
+            }
+
+            return move != Vector2.zero;
+        }
+
+        bool ActPatrol(float now, Vector2 position)
+        {
+            if (nav == null)
+                return false;
+
+            if (!hasPatrolPoint || now - patrolPickedAt > profile.patrolMaxTime)
+            {
+                hasPatrolPoint = nav.TryGetRandomPoint(position, profile.patrolMinDistance, float.MaxValue, out patrolPoint);
+                patrolPickedAt = now;
+                InvalidatePath();
+                if (!hasPatrolPoint)
+                    return false;
+            }
+
+            move = PathHeading(now, position, patrolPoint);
+            if (move == Vector2.zero && (hasPath || pathFailed))
+                hasPatrolPoint = false; // arrived, or the point cannot be reached: pick another next frame
+
+            return move != Vector2.zero;
         }
 
         // Where the hull should point to hit the target: its position, partly led by its velocity, then the random spread.
@@ -400,6 +747,11 @@ namespace TankBrawl.AI
             }
 
             return nearest >= 0 && wallHits[nearest].collider.GetComponentInParent<RicochetSurface>() != null;
+        }
+
+        static Vector2 WithFallback(Vector2 preferred, Vector2 fallback)
+        {
+            return preferred != Vector2.zero ? preferred : fallback;
         }
 
         // ---- Path following ----
@@ -436,11 +788,25 @@ namespace TankBrawl.AI
             if (!needed)
                 return;
 
+            BuildPath(now, position, goal);
+        }
+
+        bool BuildPath(float now, Vector2 position, Vector2 goal)
+        {
             nextRepathAt = now + profile.repathInterval;
             hasPath = nav.TryFindPath(position, goal, path);
+            pathFailed = !hasPath;
             pathIndex = 0;
             pathGoal = goal;
             pathVersion = nav.Version;
+            return hasPath;
+        }
+
+        void InvalidatePath()
+        {
+            hasPath = false;
+            pathFailed = false;
+            nextRepathAt = 0f;
         }
 
         // ---- Unstuck ----
@@ -500,6 +866,22 @@ namespace TankBrawl.AI
             {
                 Gizmos.color = hasLineOfSight ? Color.red : Color.gray;
                 Gizmos.DrawLine(transform.position, targetTransform.position);
+            }
+
+            if (baseState == BotState.Retreat)
+            {
+                Gizmos.color = Color.yellow;
+                Gizmos.DrawWireSphere(retreatGoal, 0.4f);
+            }
+            else if (baseState == BotState.Patrol && hasPatrolPoint)
+            {
+                Gizmos.color = Color.green;
+                Gizmos.DrawWireSphere(patrolPoint, 0.3f);
+            }
+            else if (baseState == BotState.Hold && hasHoldSpot)
+            {
+                Gizmos.color = Color.yellow;
+                Gizmos.DrawWireSphere(holdSpot, 0.3f);
             }
         }
     }

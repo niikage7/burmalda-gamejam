@@ -15,7 +15,7 @@ MonoBehaviour:
   displayName: "\u0412\u0417\u0420\u042B\u0412\u041D\u041E\u0419"
   projectilePrefab: {fileID: 3056163961974444387, guid: 36d84bc574d410b4f93c2038edeef096, type: 3}
   speed: 10
-  muzzleOffset: 0.5
+  muzzleOffset: 0.6875
   maxBounces: 0
   damage: 50
   blockDamage: 2

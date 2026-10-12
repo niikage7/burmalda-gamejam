@@ -28,7 +28,7 @@ namespace TankBrawl.Tank
 
         void Awake()
         {
-            renderers = GetComponentsInChildren<SpriteRenderer>();
+            renderers = TankHealthBar.FindTankRenderers(this);
             TryGetComponent(out shield);
             if (config == null)
                 Debug.LogError($"{name}: TankConfig is not assigned.", this);

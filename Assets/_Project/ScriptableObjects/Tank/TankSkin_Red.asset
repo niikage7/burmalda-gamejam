@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 56052f11395b1324d9dab71257907c3e, type: 3}
+  m_Name: TankSkin_Red
+  m_EditorClassIdentifier: Assembly-CSharp::TankBrawl.Tank.TankSkin
+  shadow: {fileID: 21300000, guid: dfb45a763f66fea4b91b25e03ae852f1, type: 3}
+  body: {fileID: 21300000, guid: 43006bf71a094f64fa5f05a777fb2393, type: 3}
+  turret: {fileID: 21300000, guid: 03ab088d552a2d54d9b88fd4695cafa1, type: 3}
+  barrel: {fileID: 21300000, guid: 065fd1ded2e809b4ea78c4c5c99beb18, type: 3}
+  trackLeft:
+  - {fileID: 21300000, guid: f01104a5e223c0748bcbf9212cc16875, type: 3}
+  - {fileID: 21300000, guid: 1f7c43a1d0badce43b450e2e72740e48, type: 3}
+  trackRight:
+  - {fileID: 21300000, guid: ce638307c5d8b404e906029786a11427, type: 3}
+  - {fileID: 21300000, guid: ea49b29a6940ffb4ab107c037f75dfa4, type: 3}
+  trackHalfSpacing: 0.3125
+  shadowOffset: {x: 0.05, y: -0.07}
+  muzzleDistance: 0.6875

@@ -44,6 +44,14 @@ namespace TankBrawl.Weapons
         int bounces;
         bool finished;
 
+        /// <summary>Every projectile in flight. Read-only, for bots dodging shots (index loop, no allocations).</summary>
+        public static IReadOnlyList<Projectile> InFlight => Active;
+
+        public Team Team => team;
+        public Vector2 Direction => direction;
+        public WeaponConfig Config => config;
+        public bool IsFinished => finished;
+
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         static void ResetStatics()
         {

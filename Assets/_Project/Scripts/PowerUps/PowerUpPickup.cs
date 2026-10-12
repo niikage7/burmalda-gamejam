@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace TankBrawl.PowerUps
@@ -19,10 +20,35 @@ namespace TankBrawl.PowerUps
 
         [SerializeField, Min(0.1f)] float pulsePeriod = 1f;
 
+        static readonly List<PowerUpPickup> Active = new List<PowerUpPickup>();
+
         Vector3 baseScale;
         bool taken;
 
+        /// <summary>Pick-ups lying on the map now. Read-only, for bots (index loop, no allocations).</summary>
+        public static IReadOnlyList<PowerUpPickup> OnMap => Active;
+
         public PowerUpConfig Config => config;
+
+        /// <summary>The bot that is driving to this pick-up, so two bots do not go for the same one. Informational, not a lock.</summary>
+        public Component ClaimedBy { get; set; }
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        static void ResetStatics()
+        {
+            Active.Clear();
+        }
+
+        void OnEnable()
+        {
+            Active.Add(this);
+        }
+
+        void OnDisable()
+        {
+            Active.Remove(this);
+            ClaimedBy = null;
+        }
 
         /// <summary>Sets what this pick-up gives. For pick-ups created from code.</summary>
         public void Configure(PowerUpConfig newConfig)

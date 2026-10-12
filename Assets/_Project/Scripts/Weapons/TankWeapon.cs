@@ -40,6 +40,9 @@ namespace TankBrawl.Weapons
 
         public int AmmoCount => 1 + (extraAmmo != null ? extraAmmo.Length : 0);
 
+        /// <summary>Seconds until the gun can shoot again (0 = ready).</summary>
+        public float CooldownLeft => Mathf.Max(0f, nextFireTime - Time.time);
+
         /// <summary>Multiplier of the time between shots (a power-up sets it below 1).</summary>
         public float FireIntervalScale { get; set; } = 1f;
 
