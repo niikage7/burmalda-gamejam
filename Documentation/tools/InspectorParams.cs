@@ -136,6 +136,8 @@ article.AppendLine("Все поля, которые видны в инспект
 article.AppendLine("Реальные значения в ассетах (`ScriptableObjects/…`) и на префабах могут отличаться — смотрите в редакторе.");
 article.AppendLine("Числа баланса берутся из `tank_balance_v0_2.md`.");
 article.AppendLine();
+article.AppendLine("Если вы не программист, начните со страницы [Как настраивать игру](../game/tuning.md): там по-русски разобрано, какой файл открыть и что крутить. «Не меньше» и «Диапазон» — ограничения, которые Unity не даст нарушить в инспекторе.");
+article.AppendLine();
 foreach (IGrouping<string, TypeTable> group in tables.GroupBy(t => t.Namespace))
 {
     article.AppendLine($"## {group.Key}");
