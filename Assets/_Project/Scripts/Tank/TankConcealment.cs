@@ -21,7 +21,10 @@ namespace TankBrawl.Tank
         bool inBush;
 
         /// <summary>True when an enemy tank is hidden from the player. Bots use it too.</summary>
-        public bool IsConcealed => inBush && member.Team != Team.Player;
+        public bool IsConcealed => IsHiddenFrom(Team.Player);
+
+        /// <summary>True when this tank stands in a bush and <paramref name="observer"/> belongs to the other team.</summary>
+        public bool IsHiddenFrom(Team observer) => inBush && member.Team != observer;
 
         void Awake()
         {

@@ -1,3 +1,4 @@
+using System;
 using TankBrawl.Core;
 using TankBrawl.Tank;
 using UnityEngine;
@@ -15,6 +16,11 @@ namespace TankBrawl.Weapons
         TeamMember member;
         ITankInput input;
         float nextFireTime;
+
+        public WeaponConfig Config => weapon;
+
+        /// <summary>Raised right after a shot is fired.</summary>
+        public event Action Fired;
 
         void Awake()
         {
@@ -44,6 +50,7 @@ namespace TankBrawl.Weapons
             nextFireTime = Time.time + weapon.fireInterval;
             Projectile projectile = Instantiate(weapon.projectilePrefab);
             projectile.Launch(weapon, gameObject, member.Team, body.position, tank.Forward);
+            Fired?.Invoke();
         }
     }
 }
