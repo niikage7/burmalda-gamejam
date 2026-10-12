@@ -97,22 +97,61 @@ namespace TankBrawl.Map
             if (info.BlockDamage <= 0 || brickTile == null)
                 return;
 
-            Vector3Int cell = tilemap.WorldToCell(info.Point);
-            if (!tilemap.HasTile(cell))
+            if (DamageCell(tilemap.WorldToCell(info.Point), info.BlockDamage))
+                RebuildCollider();
+        }
+
+        /// <summary>Damages every brick whose cell touches the circle (blast). Walls do not shield bricks from it.</summary>
+        public void DamageArea(Vector2 center, float radius, int blockDamage)
+        {
+            if (blockDamage <= 0 || brickTile == null)
                 return;
 
+            Vector3Int min = tilemap.WorldToCell(center - new Vector2(radius, radius));
+            Vector3Int max = tilemap.WorldToCell(center + new Vector2(radius, radius));
+            float radiusSqr = radius * radius;
+            Vector3 half = tilemap.cellSize * 0.5f;
+            bool broke = false;
+
+            for (int x = min.x; x <= max.x; x++)
+            {
+                for (int y = min.y; y <= max.y; y++)
+                {
+                    var cell = new Vector3Int(x, y, 0);
+                    if (!tilemap.HasTile(cell))
+                        continue;
+
+                    // Distance from the blast centre to the nearest point of the cell.
+                    Vector3 cellCenter = tilemap.GetCellCenterWorld(cell);
+                    float dx = Mathf.Max(Mathf.Abs(center.x - cellCenter.x) - half.x, 0f);
+                    float dy = Mathf.Max(Mathf.Abs(center.y - cellCenter.y) - half.y, 0f);
+                    if (dx * dx + dy * dy <= radiusSqr)
+                        broke |= DamageCell(cell, blockDamage);
+                }
+            }
+
+            // One collider rebuild for the whole blast, not one per brick.
+            if (broke)
+                RebuildCollider();
+        }
+
+        // Returns true when the brick broke, i.e. the collider needs a rebuild.
+        bool DamageCell(Vector3Int cell, int blockDamage)
+        {
+            if (!tilemap.HasTile(cell))
+                return false;
+
             damageTaken.TryGetValue(cell, out int taken);
-            taken += info.BlockDamage;
+            taken += blockDamage;
 
             if (taken >= brickDurability)
             {
                 damageTaken.Remove(cell);
                 tilemap.SetTile(cell, null);
-                RebuildCollider();
                 if (warningTilemap != null)
                     warningTilemap.SetTile(cell, rubbleTile);
                 pending.Add(new PendingBrick { Cell = cell, RestoreAt = Time.time + restoreDelay });
-                return;
+                return true;
             }
 
             damageTaken[cell] = taken;
@@ -122,6 +161,8 @@ namespace TankBrawl.Map
                 if (look != null)
                     tilemap.SetTile(cell, look);
             }
+
+            return false;
         }
 
         bool IsBlocked(Vector3Int cell)

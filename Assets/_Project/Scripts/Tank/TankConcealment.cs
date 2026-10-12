@@ -23,6 +23,9 @@ namespace TankBrawl.Tank
         /// <summary>True when an enemy tank is hidden from the player. Bots use it too.</summary>
         public bool IsConcealed => IsHiddenFrom(Team.Player);
 
+        /// <summary>True when this tank stands in a bush (for any observer).</summary>
+        public bool InBush => inBush;
+
         /// <summary>True when this tank stands in a bush and <paramref name="observer"/> belongs to the other team.</summary>
         public bool IsHiddenFrom(Team observer) => inBush && member.Team != observer;
 

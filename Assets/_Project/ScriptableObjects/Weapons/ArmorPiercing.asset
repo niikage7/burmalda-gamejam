@@ -12,11 +12,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1ea60f96827dcf34f9234b4a35a4c8ac, type: 3}
   m_Name: ArmorPiercing
   m_EditorClassIdentifier: Assembly-CSharp::TankBrawl.Weapons.WeaponConfig
+  displayName: "\u0411\u0420\u041E\u041D\u0415\u0411"
   projectilePrefab: {fileID: 8867409900629092452, guid: cbaa140388eba0741a3c68304d0368ef, type: 3}
   speed: 10
   muzzleOffset: 0.5
+  maxBounces: 2
   damage: 50
   blockDamage: 2
+  explosionRadius: 0
+  explosionDamage: 0
+  explosionBlockDamage: 1
+  explosionEffect: {fileID: 0}
   fireInterval: 0.9
   tankHitRadius: 0.28
   wallHitRadius: 0.12

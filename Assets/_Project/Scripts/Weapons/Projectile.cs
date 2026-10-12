@@ -168,7 +168,10 @@ namespace TankBrawl.Weapons
 
             if (projectileDistance <= unitDistance && projectileDistance <= terrainDistance)
             {
+                // Two shells cancel each other, but an explosive one still goes off at the contact point.
+                otherProjectile.Explode(transform.position, null);
                 otherProjectile.Finish();
+                Explode(transform.position, null);
                 Finish();
                 return 0f;
             }
@@ -176,6 +179,7 @@ namespace TankBrawl.Weapons
             if (unitDistance <= terrainDistance)
             {
                 unitTarget.TakeDamage(new DamageInfo(config.damage, config.blockDamage, unitHit.point, direction, owner));
+                Explode(transform.position, unitTarget);
                 Finish();
                 return 0f;
             }
@@ -200,8 +204,15 @@ namespace TankBrawl.Weapons
                 terrainTarget.TakeDamage(new DamageInfo(config.damage, config.blockDamage, point, direction, owner));
             }
 
+            Explode(transform.position, null);
             Finish();
             return 0f;
+        }
+
+        // Does nothing for a plain projectile; must be called before Finish() (it needs the config and the team).
+        void Explode(Vector2 point, IDamageable directTarget)
+        {
+            Explosion.Detonate(config, point, owner, team, directTarget);
         }
 
         static bool TryGetUnit(Collider2D hitCollider, out IDamageable unit)

@@ -14,6 +14,7 @@ namespace TankBrawl.Tank
         [SerializeField] TankConfig config;
 
         SpriteRenderer[] renderers;
+        TankShield shield;
         float invulnerableUntil;
         bool spritesShown = true;
 
@@ -28,6 +29,7 @@ namespace TankBrawl.Tank
         void Awake()
         {
             renderers = GetComponentsInChildren<SpriteRenderer>();
+            TryGetComponent(out shield);
             if (config == null)
                 Debug.LogError($"{name}: TankConfig is not assigned.", this);
         }
@@ -56,6 +58,14 @@ namespace TankBrawl.Tank
         {
             if (config == null || IsDead || Time.time < invulnerableUntil)
                 return;
+
+            // The shield eats one hit; the tank still gets the usual invulnerability window, so a second
+            // near-simultaneous hit (a blast next to a direct hit) does not slip through the gone shield.
+            if (info.Amount > 0f && shield != null && shield.TryAbsorb())
+            {
+                invulnerableUntil = Time.time + config.hitInvulnerability;
+                return;
+            }
 
             Current = Mathf.Max(0f, Current - info.Amount);
             invulnerableUntil = Time.time + config.hitInvulnerability;

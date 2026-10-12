@@ -417,7 +417,7 @@ MonoBehaviour:
     m_FontStyle: 1
     m_BestFit: 0
     m_MinSize: 10
-    m_MaxSize: 40
+    m_MaxSize: 110
     m_Alignment: 4
     m_AlignByGeometry: 0
     m_RichText: 1
@@ -643,7 +643,7 @@ MonoBehaviour:
     m_FontStyle: 0
     m_BestFit: 0
     m_MinSize: 10
-    m_MaxSize: 40
+    m_MaxSize: 46
     m_Alignment: 4
     m_AlignByGeometry: 0
     m_RichText: 1
@@ -736,7 +736,7 @@ MonoBehaviour:
     m_FontStyle: 0
     m_BestFit: 0
     m_MinSize: 10
-    m_MaxSize: 40
+    m_MaxSize: 54
     m_Alignment: 4
     m_AlignByGeometry: 0
     m_RichText: 1
@@ -867,6 +867,8 @@ MonoBehaviour:
     sceneName: Bots
   - label: "\u041D\u0438\u0442\u0440\u043E \u0438 \u0442\u0430\u0440\u0430\u043D"
     sceneName: Nitro
+  - label: "\u041F\u0430\u0432\u0435\u0440-\u0430\u043F\u044B"
+    sceneName: PowerUps
   buttonTemplate: {fileID: 153421395}
   container: {fileID: 272859518}
 --- !u!4 &1260477464

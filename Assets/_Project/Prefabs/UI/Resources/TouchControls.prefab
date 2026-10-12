@@ -199,6 +199,7 @@ MonoBehaviour:
   content: {fileID: 8159464096022154571}
   backButton: {fileID: 1375773749760568596}
   powerUpTimerText: {fileID: 8977155257973440087}
+  ammoLabel: {fileID: 7852400318634774470}
 --- !u!1 &194815154231725381
 GameObject:
   m_ObjectHideFlags: 0

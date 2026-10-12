@@ -1,3 +1,6 @@
+using TankBrawl.Input;
+using TankBrawl.PowerUps;
+using TankBrawl.Weapons;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem.UI;
@@ -24,6 +27,12 @@ namespace TankBrawl.UI
         [Tooltip("Placeholder for the power-up timer (bottom center). Hidden until power-ups exist.")]
         [SerializeField] Text powerUpTimerText;
 
+        [Tooltip("Label of the ammo button: shows the selected projectile type.")]
+        [SerializeField] Text ammoLabel;
+
+        TankPowerUps playerPowerUps;
+        TankWeapon playerWeapon;
+
         void Awake()
         {
             bool visible = Application.isMobilePlatform || (Application.isEditor && showTouchInEditor);
@@ -35,19 +44,60 @@ namespace TankBrawl.UI
             backButton.onClick.AddListener(SceneNavigator.GoBack);
         }
 
+        // Start, not Awake: the player tank of the scene must exist already.
+        void Start()
+        {
+            if (!content.activeSelf)
+                return;
+
+            PlayerTankInput player = FindAnyObjectByType<PlayerTankInput>();
+            if (player == null)
+                return;
+
+            player.TryGetComponent(out playerPowerUps);
+            if (player.TryGetComponent(out playerWeapon))
+            {
+                playerWeapon.AmmoChanged += ShowAmmo;
+                ShowAmmo();
+            }
+        }
+
         void OnDestroy()
         {
             if (backButton != null)
                 backButton.onClick.RemoveListener(SceneNavigator.GoBack);
+            if (playerWeapon != null)
+                playerWeapon.AmmoChanged -= ShowAmmo;
+        }
+
+        void Update()
+        {
+            if (playerPowerUps == null)
+                return;
+
+            if (playerPowerUps.TryGetLatest(out string effectName, out float secondsLeft))
+                SetPowerUpTime(secondsLeft, effectName);
+            else
+                SetPowerUpTime(0f);
         }
 
         /// <summary>Shows the remaining power-up time, or hides the timer when <paramref name="secondsLeft"/> is not positive.</summary>
-        public void SetPowerUpTime(float secondsLeft)
+        public void SetPowerUpTime(float secondsLeft, string effectName = null)
         {
             bool active = secondsLeft > 0f;
-            powerUpTimerText.gameObject.SetActive(active);
+            if (powerUpTimerText.gameObject.activeSelf != active)
+                powerUpTimerText.gameObject.SetActive(active);
             if (active)
-                powerUpTimerText.text = secondsLeft.ToString("0.0");
+            {
+                string time = secondsLeft.ToString("0.0");
+                powerUpTimerText.text = string.IsNullOrEmpty(effectName) ? time : effectName + " " + time;
+            }
+        }
+
+        void ShowAmmo()
+        {
+            if (ammoLabel != null && playerWeapon != null && playerWeapon.SelectedAmmo != null)
+                ammoLabel.text = playerWeapon.SelectedAmmo.displayName;
         }
 
         // uGUI delivers touches to the on-screen controls only through an EventSystem, and the test scenes have none.

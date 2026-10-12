@@ -28,6 +28,9 @@ namespace TankBrawl.Tank
         public float CurrentSpeed => currentSpeed;
         public Vector2 Forward => AngleToDirection(body.rotation);
 
+        /// <summary>Scales the drive speed, nitro included (the laser power-up slows the tank). 1 = normal.</summary>
+        public float SpeedMultiplier { get; set; } = 1f;
+
         /// <summary>The input asked for driving in the last physics step (not just turning in place).</summary>
         public bool IsDriving { get; private set; }
 
@@ -68,7 +71,7 @@ namespace TankBrawl.Tank
 
                 bool aligned = Mathf.Abs(Mathf.DeltaAngle(angle, targetAngle)) <= config.maxDriveAngle;
                 if (aligned && move.magnitude >= config.driveThreshold)
-                    targetSpeed = nitro != null && nitro.IsActive ? nitro.Speed : config.moveSpeed;
+                    targetSpeed = (nitro != null && nitro.IsActive ? nitro.Speed : config.moveSpeed) * SpeedMultiplier;
             }
 
             IsDriving = targetSpeed > 0f;
@@ -91,6 +94,7 @@ namespace TankBrawl.Tank
         void OnDisable()
         {
             knockbackLeft = 0f;
+            SpeedMultiplier = 1f;
         }
 
         static Vector2 AngleToDirection(float angleDeg)
