@@ -6,9 +6,11 @@ using UnityEngine.Tilemaps;
 namespace TankBrawl.Map
 {
     /// <summary>
-    /// Destructible bricks. Sits on the same object as the tilemap's collider, so projectiles find it through the
-    /// collider they hit. A destroyed brick comes back after <see cref="restoreDelay"/>, blinking for the last
+    /// Destructible bricks, one whole block per cell. Sits on the same object as the tilemap's collider, so projectiles
+    /// find it through the collider they hit. A damaged block swaps to the matching tile of <see cref="damagedTiles"/>.
+    /// A destroyed block comes back after <see cref="restoreDelay"/>, blinking for the last
     /// <see cref="warningDuration"/> seconds; while a tank stands on the cell it waits.
+    /// Looks are never tinted from code: every state is a tile, so a restored block is exactly the default one.
     /// </summary>
     [RequireComponent(typeof(Tilemap))]
     public class DestructibleTilemap : MonoBehaviour, IDamageable
@@ -21,13 +23,14 @@ namespace TankBrawl.Map
             public bool BlinkOn;
         }
 
+        [Tooltip("Intact block.")]
         [SerializeField] TileBase brickTile;
+
+        [Tooltip("Damaged looks: element i is shown after i + 1 hits. The last one is used for any further hits before the block breaks.")]
+        [SerializeField] TileBase[] damagedTiles;
 
         [Tooltip("Durability of a brick. Balance v0.2: 2")]
         [SerializeField, Min(1)] int brickDurability = 2;
-
-        [Tooltip("Tint of a brick that is one hit away from breaking.")]
-        [SerializeField] Color damagedColor = new Color(0.6f, 0.5f, 0.5f, 1f);
 
         [Header("Restoring")]
         [Tooltip("Seconds until a destroyed brick comes back. Balance v0.2: 5")]
@@ -92,7 +95,7 @@ namespace TankBrawl.Map
                 return;
 
             Vector3Int cell = tilemap.WorldToCell(info.Point);
-            if (tilemap.GetTile(cell) != brickTile)
+            if (!tilemap.HasTile(cell))
                 return;
 
             damageTaken.TryGetValue(cell, out int taken);
@@ -108,8 +111,12 @@ namespace TankBrawl.Map
             }
 
             damageTaken[cell] = taken;
-            tilemap.SetTileFlags(cell, TileFlags.None);
-            tilemap.SetColor(cell, Color.Lerp(Color.white, damagedColor, (float)taken / (brickDurability - 1)));
+            if (damagedTiles != null && damagedTiles.Length > 0)
+            {
+                TileBase look = damagedTiles[Mathf.Min(taken, damagedTiles.Length) - 1];
+                if (look != null)
+                    tilemap.SetTile(cell, look);
+            }
         }
 
         bool IsBlocked(Vector3Int cell)
@@ -118,6 +125,7 @@ namespace TankBrawl.Map
             return Physics2D.OverlapBox(tilemap.GetCellCenterWorld(cell), size, 0f, blockers) != null;
         }
 
+        // Blinks by toggling the tile itself, so the blink shows the block's real colours.
         void ShowWarning(ref PendingBrick brick)
         {
             if (warningTilemap == null)
@@ -127,13 +135,9 @@ namespace TankBrawl.Map
             if (brick.WarningShown && brick.BlinkOn == on)
                 return;
 
-            if (!brick.WarningShown)
-                warningTilemap.SetTile(brick.Cell, brickTile);
-
             brick.WarningShown = true;
             brick.BlinkOn = on;
-            warningTilemap.SetTileFlags(brick.Cell, TileFlags.None);
-            warningTilemap.SetColor(brick.Cell, on ? Color.white : Color.clear);
+            warningTilemap.SetTile(brick.Cell, on ? brickTile : null);
         }
 
         void Restore(Vector3Int cell)
@@ -142,8 +146,6 @@ namespace TankBrawl.Map
                 warningTilemap.SetTile(cell, null);
 
             tilemap.SetTile(cell, brickTile);
-            tilemap.SetTileFlags(cell, TileFlags.None);
-            tilemap.SetColor(cell, Color.white);
             RebuildCollider();
         }
 

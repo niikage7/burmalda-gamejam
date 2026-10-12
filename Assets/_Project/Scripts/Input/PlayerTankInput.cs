@@ -14,6 +14,7 @@ namespace TankBrawl.Input
 
         public Vector2 Move => moveAction.action.ReadValue<Vector2>();
         public bool FireHeld => fireAction.action.IsPressed();
+        public bool FirePressed => fireAction.action.WasPressedThisFrame();
         public bool NitroHeld => nitroAction.action.IsPressed();
         public bool CycleAmmoPressed => cycleAmmoAction.action.WasPressedThisFrame();
 

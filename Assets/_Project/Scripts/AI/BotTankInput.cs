@@ -87,6 +87,7 @@ namespace TankBrawl.AI
 
         public Vector2 Move => move;
         public bool FireHeld => fire;
+        public bool FirePressed => false;
         public bool NitroHeld => nitroHeld;
         public bool CycleAmmoPressed => false;
 
