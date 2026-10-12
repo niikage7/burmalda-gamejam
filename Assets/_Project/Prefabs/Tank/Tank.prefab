@@ -16,6 +16,8 @@ GameObject:
   - component: {fileID: 7330980533943949661}
   - component: {fileID: 4289164733255231693}
   - component: {fileID: 2681084728525482842}
+  - component: {fileID: 1332661113604917011}
+  - component: {fileID: 2973405264457034389}
   m_Layer: 6
   m_Name: Tank
   m_TagString: Untagged
@@ -167,6 +169,31 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TankBrawl.Tank.TankConcealment
   ownAlphaInBush: 0.5
+--- !u!114 &1332661113604917011
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 15709209314227761}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a3711dbf20c4285499294a8e3763a5f1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TankBrawl.Tank.TankNitro
+  config: {fileID: 11400000, guid: 499bee7ee2d97ba40ba4a105cc98bfef, type: 2}
+--- !u!114 &2973405264457034389
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 15709209314227761}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 408269b6200ec4b4d8f99dc7fa879e62, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TankBrawl.Tank.TankRam
 --- !u!1 &294398038448544280
 GameObject:
   m_ObjectHideFlags: 0

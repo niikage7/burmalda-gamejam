@@ -50,8 +50,11 @@ namespace TankBrawl.AI
         readonly RaycastHit2D[] wallHits = new RaycastHit2D[MaxWallHits];
         readonly List<Vector2> path = new List<Vector2>();
 
+        TankNitro nitro;
+
         Vector2 move;
         bool fire;
+        bool nitroHeld;
         float turnOnlyMagnitude;
 
         TeamMember target;
@@ -84,7 +87,7 @@ namespace TankBrawl.AI
 
         public Vector2 Move => move;
         public bool FireHeld => fire;
-        public bool NitroHeld => false;
+        public bool NitroHeld => nitroHeld;
         public bool CycleAmmoPressed => false;
 
         public BotState State { get; private set; }
@@ -103,6 +106,7 @@ namespace TankBrawl.AI
             tank = GetComponent<TankController>();
             weapon = GetComponent<TankWeapon>();
             member = GetComponent<TeamMember>();
+            TryGetComponent(out nitro);
 
             wallFilter = new ContactFilter2D();
             wallFilter.useTriggers = false;
@@ -155,6 +159,7 @@ namespace TankBrawl.AI
             {
                 move = reverseDirection;
                 fire = false;
+                nitroHeld = false;
                 stuckWindowOpen = false;
                 return;
             }
@@ -190,6 +195,7 @@ namespace TankBrawl.AI
         {
             move = Vector2.zero;
             fire = false;
+            nitroHeld = false;
         }
 
         void RollAim()
@@ -306,14 +312,19 @@ namespace TankBrawl.AI
         // Sets move/fire for this frame. Returns true when the bot wants to drive (used to detect being stuck).
         bool Think(float now, Vector2 position)
         {
+            bool nitroWasOn = nitroHeld;
             move = Vector2.zero;
             fire = false;
+            nitroHeld = false;
 
             if (target != null && hasLineOfSight && targetDistance <= profile.fireRange)
             {
                 State = BotState.Engage;
                 Vector2 aim = AimDirection(position);
-                bool close = targetDistance <= profile.stopDistance;
+
+                // Ramming drives into the target instead of stopping at stopDistance.
+                nitroHeld = WantsRam(nitroWasOn, position);
+                bool close = targetDistance <= profile.stopDistance && !nitroHeld;
 
                 Vector2 heading = aim;
                 if (!close && !directClear)
@@ -339,6 +350,22 @@ namespace TankBrawl.AI
 
             State = BotState.Idle;
             return false;
+        }
+
+        // Nitro on while the target is in ram range with a clear straight way. Starts only with a good stock and a
+        // matching hull direction; once on, stays on until the stock runs low (hysteresis, so it does not flicker).
+        bool WantsRam(bool wasOn, Vector2 position)
+        {
+            if (nitro == null || nitro.IsLocked || profile.nitroRamDistance <= 0f)
+                return false;
+            if (!directClear || targetDistance > profile.nitroRamDistance)
+                return false;
+
+            if (wasOn)
+                return nitro.Normalized > profile.nitroStopStock;
+
+            return nitro.Normalized >= profile.nitroStartStock
+                   && Vector2.Angle(tank.Forward, targetPosition - position) <= profile.nitroAlignTolerance;
         }
 
         // Where the hull should point to hit the target: its position, partly led by its velocity, then the random spread.

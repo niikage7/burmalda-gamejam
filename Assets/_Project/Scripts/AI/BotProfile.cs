@@ -34,6 +34,19 @@ namespace TankBrawl.AI
         [Tooltip("Does not shoot if a steel wall is closer than this in front of the muzzle: the ricochet would come back, units.")]
         [Min(0f)] public float steelPointBlankDistance = 1.5f;
 
+        [Header("Nitro and ram (minimal; the Ram state with a rev-up is stage 6)")]
+        [Tooltip("The bot burns nitro and drives into the target when it is closer than this and the straight way is clear, units. 0 = never uses nitro.")]
+        [Min(0f)] public float nitroRamDistance = 4.5f;
+
+        [Tooltip("Nitro is switched on only with at least this fraction of the stock.")]
+        [Range(0f, 1f)] public float nitroStartStock = 0.5f;
+
+        [Tooltip("Nitro is switched off when the stock falls to this fraction.")]
+        [Range(0f, 1f)] public float nitroStopStock = 0.1f;
+
+        [Tooltip("Nitro is switched on only if the hull points at the target within this angle, deg.")]
+        [Range(0f, 90f)] public float nitroAlignTolerance = 15f;
+
         [Header("Perception")]
         [Tooltip("How often the line of sight is re-checked, s.")]
         [Min(0.02f)] public float perceptionInterval = 0.1f;

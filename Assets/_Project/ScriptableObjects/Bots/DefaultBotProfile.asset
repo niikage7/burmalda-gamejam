@@ -20,6 +20,10 @@ MonoBehaviour:
   fireRange: 9
   stopDistance: 3
   steelPointBlankDistance: 1.5
+  nitroRamDistance: 4.5
+  nitroStartStock: 0.5
+  nitroStopStock: 0.1
+  nitroAlignTolerance: 15
   perceptionInterval: 0.1
   retargetInterval: 1
   waypointRadius: 0.2

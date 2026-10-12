@@ -20,6 +20,7 @@ namespace TankBrawl.Tank
         public float Current { get; private set; }
         public float Max => config.maxHealth;
         public bool IsDead => Current <= 0f;
+        public bool IsInvulnerable => Time.time < invulnerableUntil;
         public DamageableKind Kind => DamageableKind.Unit;
 
         public event Action<TankHealth> Died;

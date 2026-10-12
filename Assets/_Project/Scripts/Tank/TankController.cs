@@ -15,16 +15,35 @@ namespace TankBrawl.Tank
 
         Rigidbody2D body;
         ITankInput input;
+        TankNitro nitro;
         float currentSpeed;
+
+        // A shove from outside (a ram). This script overwrites linearVelocity every step, so a shove
+        // cannot be an impulse on the body: it is added on top of the drive velocity and fades out linearly.
+        Vector2 knockbackVelocity;
+        float knockbackDuration;
+        float knockbackLeft;
 
         public TankConfig Config => config;
         public float CurrentSpeed => currentSpeed;
         public Vector2 Forward => AngleToDirection(body.rotation);
 
+        /// <summary>The input asked for driving in the last physics step (not just turning in place).</summary>
+        public bool IsDriving { get; private set; }
+
+        /// <summary>Shoves the tank with <paramref name="velocity"/> (units/s), fading to zero over <paramref name="duration"/> s. Replaces a shove in progress.</summary>
+        public void ApplyKnockback(Vector2 velocity, float duration)
+        {
+            knockbackVelocity = velocity;
+            knockbackDuration = Mathf.Max(duration, Mathf.Epsilon);
+            knockbackLeft = duration;
+        }
+
         void Awake()
         {
             body = GetComponent<Rigidbody2D>();
             input = GetComponent<ITankInput>();
+            TryGetComponent(out nitro);
             if (input == null)
                 Debug.LogError($"{name}: no ITankInput component, the tank will not move.", this);
             if (config == null)
@@ -49,15 +68,29 @@ namespace TankBrawl.Tank
 
                 bool aligned = Mathf.Abs(Mathf.DeltaAngle(angle, targetAngle)) <= config.maxDriveAngle;
                 if (aligned && move.magnitude >= config.driveThreshold)
-                    targetSpeed = config.moveSpeed;
+                    targetSpeed = nitro != null && nitro.IsActive ? nitro.Speed : config.moveSpeed;
             }
+
+            IsDriving = targetSpeed > 0f;
 
             float rate = targetSpeed > currentSpeed ? config.acceleration : config.deceleration;
             currentSpeed = Mathf.MoveTowards(currentSpeed, targetSpeed, rate * dt);
 
+            Vector2 velocity = AngleToDirection(angle) * currentSpeed;
+            if (knockbackLeft > 0f)
+            {
+                velocity += knockbackVelocity * (knockbackLeft / knockbackDuration);
+                knockbackLeft -= dt;
+            }
+
             body.MoveRotation(angle);
             body.angularVelocity = 0f;
-            body.linearVelocity = AngleToDirection(angle) * currentSpeed;
+            body.linearVelocity = velocity;
+        }
+
+        void OnDisable()
+        {
+            knockbackLeft = 0f;
         }
 
         static Vector2 AngleToDirection(float angleDeg)
