@@ -12,7 +12,8 @@
 ## Папки и неймспейсы
 
 Весь код игры лежит в `Assets/_Project/Scripts`, у каждой папки свой неймспейс `TankBrawl.<Папка>`.
-Скрипты редактора (меню **TankBrawl/…**) — в `Assets/_Project/Editor`, в API-справочник они не попадают.
+Скрипты редактора (меню **TankBrawl/…**, в том числе генератор карт `MapBuilder`) — в `Assets/_Project/Editor`,
+в API-справочник они не попадают. Python-скрипты для карт (проверка и превью без Unity) — в `Tools/maps`.
 
 | Неймспейс | Что внутри | Зависит от |
 | --- | --- | --- |
@@ -20,7 +21,7 @@
 | <xref:TankBrawl.Input> | Ввод игрока через Input System | Core |
 | <xref:TankBrawl.Tank> | Танк: движение, здоровье, нитро, таран, щит, кусты, уровни прокачки, внешний вид, полоска HP | Core, Map, Audio, Progress, Input, AI |
 | <xref:TankBrawl.Weapons> | Стрельба, снаряды, взрывы, лазер | Core, Tank, Map, Audio |
-| <xref:TankBrawl.PowerUps> | Усиления: пикап на карте, спавнер, эффекты на танке | Core, Tank, Weapons, Audio |
+| <xref:TankBrawl.PowerUps> | Усиления: пикап на карте с подписью, спавнер, эффекты на танке; зарядные точки нитро | Core, Tank, Weapons, Audio, UI (шрифт подписи) |
 | <xref:TankBrawl.Map> | Тайлмапы: кирпич, кусты, рикошет, автотайлы, тени стен, зона точки, обход бага коллайдеров | Core, Audio |
 | <xref:TankBrawl.AI> | Боты: навигация A* и «мозг» бота (FSM) | Core, Tank, Weapons, Map, PowerUps |
 | <xref:TankBrawl.Match> | Матч: менеджер, три режима, точки появления, HUD, киллтаб, пауза, экран итога | почти все |
@@ -90,8 +91,8 @@ flowchart LR
 
 ## Матч поверх танков
 
-Сцена с <xref:TankBrawl.Match.MatchManager> становится матчем; сцена без него (песочницы) работает как раньше —
-танки просто воюют до гибели.
+Сцена с <xref:TankBrawl.Match.MatchManager> становится матчем: это `Arena` и карты из `Scenes/Maps`
+(см. [Карты](maps.md)); сцена без него (песочницы) работает как раньше — танки просто воюют до гибели.
 
 ```mermaid
 flowchart LR
@@ -164,7 +165,7 @@ sequenceDiagram
 | <xref:TankBrawl.Tank.TankSkin> | Спрайты одного цвета танка и числа раскладки арта |
 | <xref:TankBrawl.Tank.HealthBarStyle> | Размер, цвета и видимость полоски HP |
 | <xref:TankBrawl.Weapons.WeaponConfig> | Один тип снаряда: скорость, урон, перезарядка, хитбоксы, рикошеты, взрыв, звук; прибавки за уровень |
-| <xref:TankBrawl.PowerUps.PowerUpConfig> | Одно усиление: тип, длительность, числа своего типа |
+| <xref:TankBrawl.PowerUps.PowerUpConfig> | Одно усиление: тип, длительность, числа своего типа, подпись на карте |
 | <xref:TankBrawl.AI.BotProfile> | Характер бота: реакция, разброс, дистанции, таран, отступление, увороты, точка |
 | <xref:TankBrawl.Match.MatchModeConfig> | Один режим: защита при появлении, возрождение, лимиты, раунды, очки, доп. цель |
 | <xref:TankBrawl.Progress.ProgressionConfig> | Награды в шестерёнках, цены и описания веток улучшений |

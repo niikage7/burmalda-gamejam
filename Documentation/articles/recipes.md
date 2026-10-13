@@ -36,14 +36,17 @@
 
 ## Новое усиление
 
-Если хватает существующих видов (скорострельность, взрывные снаряды, лазер, щит) с другими числами — просто
-**Create → TankBrawl → Power-Up Config** и добавьте ассет в `powerUps` спавнера. Новый **вид** требует кода:
+Если хватает существующих видов (скорострельность, взрывные снаряды, лазер, щит, ремонт, заряд нитро) с другими
+числами — просто **Create → TankBrawl → Power-Up Config** и добавьте ассет в `powerUps` спавнера (для ремонта и заряда
+нитро ассет того же вида заменяет числа по умолчанию). Новый **вид** требует кода:
 
 1. Добавьте значение в <xref:TankBrawl.PowerUps.PowerUpKind> (в конец) и, если нужно, поля его секции в
    <xref:TankBrawl.PowerUps.PowerUpConfig>.
 2. Эффект сделайте рычагом в компоненте танка, которого он касается (как `TankWeapon.FireIntervalScale` или
    `TankController.SpeedMultiplier`), и сбрасывайте его в `OnEnable` / `OnDisable` этого компонента.
-3. Включайте и выключайте рычаг в `TankPowerUps.Refresh()`.
+3. Включайте и выключайте рычаг в `TankPowerUps.Refresh()`. Мгновенный вид (как ремонт) — в `TankPowerUps.ApplyInstant`
+   и в `PowerUpConfig.IsInstant`; подпись над пикапом — в `PowerUpConfig.MapLabel`; когда он нужен боту —
+   в `BotTankInput.IsWanted`.
 4. Создайте ассет, добавьте его в `powerUps` у <xref:TankBrawl.PowerUps.PowerUpSpawner> на арене и в песочнице.
 5. Если бот должен вести себя с ним иначе — см. `BotTankInput.ActAttack` (так сделано для лазера).
 
@@ -60,21 +63,9 @@
    в `UiTheme.modeIcons`.
 6. Если режиму нужны свои объекты сцены (как зона точки), включайте их в `MatchManager.Start` по `config.kind`.
 
-## Новая арена под режимы
+## Новая карта
 
-Сцена должна содержать:
-
-- карту под одним `Grid` (`Border`, `Steel`, `Bricks` + `BricksWarning`, `Water`, `Bushes`, `Ground`) и `WallShadows`;
-- `BotNav` с <xref:TankBrawl.AI.BotNavGrid> (назначьте твёрдые и кирпичные тайлмапы);
-- `PlayerTank`, союзных ботов (`Team.Player`) и вражеских (`Team.Enemy`), всего 6 для режимов 3 × 3;
-- точки <xref:TankBrawl.Match.SpawnPoint>: по 3 на базу каждой команды и 8+ общих (`freeForAll`) для «Все против всех»;
-  ось Y точки — куда смотрит танк. Точка свободна, только если в её клетке есть `Ground` и нет стен и воды;
-- зону <xref:TankBrawl.Map.CapturePointZone> и `PowerUpSpawner` с точками;
-- `MatchManager` со ссылками на скины команд, зону и площадки баз;
-- камеру с <xref:TankBrawl.Core.CameraFollow>.
-
-Добавьте сцену в Build Settings и укажите её имя в поле `arenaScene` у `MenuScreens` (сейчас все режимы играются на одной
-`Arena`).
+Карты рисуются текстом и собираются генератором — пошагово в статье [Карты](maps.md#новая-карта).
 
 ## Новый звук
 
