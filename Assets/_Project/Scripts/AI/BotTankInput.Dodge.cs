@@ -1,3 +1,4 @@
+using TankBrawl.Map;
 using TankBrawl.Weapons;
 using UnityEngine;
 
@@ -5,7 +6,9 @@ namespace TankBrawl.AI
 {
     // Dodge: a short side step away from a shot that would hit. The bot only reacts to what a player could see:
     // projectiles are visible everywhere on the screen (bushes hide only tanks), so the limit is the screen-sized
-    // dodgeSightRange, and the bot reacts with a human delay and not always (dodgeChance).
+    // dodgeSightRange, and the bot reacts with a human delay and not always (dodgeChance). One bounce off steel is
+    // predicted, so the bot also steps away from a ricochet, its own shell included. It keeps shooting while it dodges
+    // if the hull happens to point at the target.
     public partial class BotTankInput
     {
         // Stay this long out of the scan after a failed roll or an impossible dodge, s.
@@ -47,7 +50,7 @@ namespace TankBrawl.AI
             {
                 if (now < dodgeUntil && dodgeThreat != null && !dodgeThreat.IsFinished && !HasPassed(dodgeThreat, position))
                 {
-                    ApplyDodge();
+                    ApplyDodge(now, position);
                     return true;
                 }
 
@@ -68,7 +71,7 @@ namespace TankBrawl.AI
                 {
                     if (BeginDodge(now, position, pendingThreat, timeToHit))
                     {
-                        ApplyDodge();
+                        ApplyDodge(now, position);
                         return true;
                     }
 
@@ -109,12 +112,17 @@ namespace TankBrawl.AI
             dodgeReactAt = now + Random.Range(profile.dodgeReactionMin, profile.dodgeReactionMax);
         }
 
-        // Would this shot hit the hull within the lookahead if the bot stayed on its course? Walls in between stop it
-        // (a ricochet that comes back is not predicted).
+        // Would this shot hit the hull within the lookahead if the bot stayed on its course? Walls in between stop it;
+        // steel with a bounce left reflects it once more. Shells of the own team are a threat only when they are the bot's
+        // own and can come back off steel (a projectile spares its shooter until its first bounce).
         bool TryEvaluateThreat(Projectile shot, Vector2 position, out float timeToHit)
         {
             timeToHit = 0f;
-            if (shot == null || shot.IsFinished || shot.Team == member.Team)
+            if (shot == null || shot.IsFinished)
+                return false;
+
+            bool own = shot.Team == member.Team;
+            if (own && shot.Owner != gameObject)
                 return false;
 
             WeaponConfig shotConfig = shot.Config;
@@ -122,11 +130,34 @@ namespace TankBrawl.AI
                 return false;
 
             Vector2 origin = shot.transform.position;
-            Vector2 offset = position - origin;
-            if (offset.sqrMagnitude > profile.dodgeSightRange * profile.dodgeSightRange)
+            if ((position - origin).sqrMagnitude > profile.dodgeSightRange * profile.dodgeSightRange)
                 return false;
 
+            // How far the shot flies within the lookahead.
+            float budget = shot.Speed * profile.dodgeLookahead;
             Vector2 direction = shot.Direction;
+            if ((!own || shot.Bounces > 0) && LegHits(origin, direction, position, shotConfig, budget, out float contact))
+            {
+                timeToHit = contact / shot.Speed;
+                return true;
+            }
+
+            if (shot.BouncesLeft > 0
+                && TryBounce(origin, direction, shotConfig.wallHitRadius, budget, out Vector2 bounce, out Vector2 reflected, out float travelled)
+                && LegHits(bounce, reflected, position, shotConfig, budget - travelled, out float rest))
+            {
+                timeToHit = (travelled + rest) / shot.Speed;
+                return true;
+            }
+
+            return false;
+        }
+
+        // Does a shot leaving `origin` along `direction` touch the hull within `budget` units, with no wall before it?
+        bool LegHits(Vector2 origin, Vector2 direction, Vector2 position, WeaponConfig shotConfig, float budget, out float contact)
+        {
+            contact = 0f;
+            Vector2 offset = position - origin;
             float along = Vector2.Dot(offset, direction);
             if (along <= 0f)
                 return false;
@@ -136,12 +167,36 @@ namespace TankBrawl.AI
             if (Mathf.Abs(side) >= reach)
                 return false;
 
-            float contact = Mathf.Max(0f, along - Mathf.Sqrt(reach * reach - side * side));
-            timeToHit = contact / shot.Speed;
-            if (timeToHit > profile.dodgeLookahead)
+            contact = Mathf.Max(0f, along - Mathf.Sqrt(reach * reach - side * side));
+            if (contact > budget)
                 return false;
 
             return contact <= 0f || !WallBetween(origin, direction, contact, shotConfig.wallHitRadius);
+        }
+
+        // The first wall within `budget`: when it is steel, where the shot's centre bounces and where it flies next.
+        bool TryBounce(Vector2 origin, Vector2 direction, float radius, float budget, out Vector2 bounce, out Vector2 reflected, out float travelled)
+        {
+            bounce = default;
+            reflected = default;
+            travelled = 0f;
+
+            int count = Physics2D.CircleCast(origin, radius, direction, wallFilter, wallHits, budget);
+            int nearest = -1;
+            for (int i = 0; i < count; i++)
+            {
+                if (Vector2.Dot(direction, wallHits[i].normal) <= 0f && (nearest < 0 || wallHits[i].distance < wallHits[nearest].distance))
+                    nearest = i;
+            }
+
+            if (nearest < 0 || wallHits[nearest].collider.GetComponentInParent<RicochetSurface>() == null)
+                return false;
+
+            RaycastHit2D hit = wallHits[nearest];
+            travelled = hit.distance;
+            bounce = hit.centroid;
+            reflected = Vector2.Reflect(direction, hit.normal);
+            return true;
         }
 
         // Same rule as the projectile itself: a wall behind the shot (the one it just left) does not count.
@@ -199,11 +254,13 @@ namespace TankBrawl.AI
             return true;
         }
 
-        void ApplyDodge()
+        // The side step drives; the gun fires on the way if the hull happens to point at the target.
+        void ApplyDodge(float now, Vector2 position)
         {
             move = dodgeDirection;
-            fire = false;
             nitroHeld = dodgeUsesNitro;
+            fire = false;
+            TryOpportunisticFire(now, position);
         }
     }
 }

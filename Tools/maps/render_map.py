@@ -3,7 +3,7 @@ autotile and checker rules as BlobTile / CheckerTile, so a map can be previewed 
 
     python3 Tools/maps/render_map.py Assets/_Project/Editor/MapLayouts/River.txt river.png
 
-Base spawns are drawn as tanks facing the zone, 'f' as white rings, 'p' as yellow dots, the zone as a ring."""
+Base spawns are drawn as tanks facing the zone, 'f' as white rings, 'p' as yellow dots, 'n' as violet pads, the zone as a ring."""
 import math, os, subprocess, sys
 
 ART = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', 'Assets', '_Project', 'Art')
@@ -93,7 +93,7 @@ for r in range(-B, H + B):
             x, y = px(c, r); mvg.append(f'rectangle {x},{y} {x + CELL - 1},{y + CELL - 1}')
 mvg.append('stroke none')
 
-cells = {m: [(c, r) for r in range(H) for c in range(W) if rows[r][c] == m] for m in '12fpZ'}
+cells = {m: [(c, r) for r in range(H) for c in range(W) if rows[r][c] == m] for m in '12fpZn'}
 zc = (sum(c for c, _ in cells['Z']) / len(cells['Z']) + 0.5, sum(r for _, r in cells['Z']) / len(cells['Z']) + 0.5)
 zx, zy = (zc[0] + B) * CELL, (zc[1] + B) * CELL
 zr = float(meta.get('zone', 3)) * CELL
@@ -108,6 +108,10 @@ for marker, color in (('1', 'rgba(90,165,255,0.30)'), ('2', 'rgba(255,100,90,0.3
 for c, r in cells['p']:
     x, y = px(c, r); cx, cy = x + CELL / 2, y + CELL / 2
     mvg.append(f'fill rgb(255,215,60) stroke rgb(90,60,0) stroke-width 2 circle {cx},{cy} {cx + CELL * 0.28},{cy}')
+for c, r in cells['n']:
+    x, y = px(c, r); cx, cy = x + CELL / 2, y + CELL / 2
+    mvg.append(f'fill rgba(30,30,40,0.75) circle {cx},{cy} {cx + CELL * 0.45},{cy}')
+    mvg.append(f'fill rgb(230,115,255) circle {cx},{cy} {cx + CELL * 0.27},{cy}')
 for c, r in cells['f']:
     x, y = px(c, r); cx, cy = x + CELL / 2, y + CELL / 2
     mvg.append(f'fill none stroke rgba(255,255,255,0.9) stroke-width 2 circle {cx},{cy} {cx + CELL * 0.36},{cy}')

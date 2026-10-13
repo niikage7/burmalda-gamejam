@@ -1,14 +1,22 @@
+using System.Globalization;
 using TankBrawl.Weapons;
 using UnityEngine;
 
 namespace TankBrawl.PowerUps
 {
+    /// <summary>Kinds of power-ups. Stored as numbers in assets: add new kinds at the end only.</summary>
     public enum PowerUpKind
     {
         RapidFire,
         ExplosiveShells,
         Laser,
-        Shield
+        Shield,
+
+        /// <summary>Instant: restores health (balance v0.2 §7).</summary>
+        Repair,
+
+        /// <summary>Instant: fills the nitro stock (balance v0.2 §7).</summary>
+        NitroRefill
     }
 
     /// <summary>
@@ -23,7 +31,10 @@ namespace TankBrawl.PowerUps
         [Tooltip("Name shown next to the timer.")]
         public string displayName = "УСИЛЕНИЕ";
 
-        [Tooltip("How long the effect lasts, s. A second pick-up of the same kind refills it. Balance v0.2: explosive 15, laser 4. Rapid fire and shield are our own proposals.")]
+        [Tooltip("Short line above the pick-up on the map. Empty = made from the numbers below, e.g. \"Стрельба ×2 · 10 с\".")]
+        public string mapLabel;
+
+        [Tooltip("How long the effect lasts, s. A second pick-up of the same kind refills it. Balance v0.2: explosive 15, laser 4. Rapid fire and shield are our own proposals. Ignored by the instant kinds (repair, nitro refill).")]
         [Min(0.1f)] public float duration = 10f;
 
         [Header("Pick-up look (placeholder until real art)")]
@@ -56,5 +67,72 @@ namespace TankBrawl.PowerUps
         [Header("Shield")]
         [Tooltip("The ring blinks for this long before the shield expires, s.")]
         [Min(0f)] public float shieldBlinkTime = 2f;
+
+        [Header("Repair")]
+        [Tooltip("Health restored at once, never above the maximum, HP. Balance v0.2 §7: 30")]
+        [Min(0f)] public float repairAmount = 30f;
+
+        /// <summary>The line above the pick-up on the map: <see cref="mapLabel"/>, or what the effect does and for how long.</summary>
+        public string MapLabel
+        {
+            get
+            {
+                if (!string.IsNullOrEmpty(mapLabel))
+                    return mapLabel;
+
+                string effect;
+                switch (kind)
+                {
+                    case PowerUpKind.RapidFire:
+                        effect = "Стрельба ×" + Number(1f / Mathf.Max(fireIntervalScale, 0.01f));
+                        break;
+                    case PowerUpKind.ExplosiveShells:
+                        effect = "Взрывные снаряды";
+                        break;
+                    case PowerUpKind.Laser:
+                        effect = "Лазер";
+                        break;
+                    case PowerUpKind.Shield:
+                        effect = "Щит";
+                        break;
+                    case PowerUpKind.Repair:
+                        return "+" + Mathf.RoundToInt(repairAmount) + " HP";
+                    default:
+                        return "Полное нитро";
+                }
+
+                return effect + " · " + Number(duration) + " с";
+            }
+        }
+
+        // Russian style: a comma, at most one decimal ("1,5", "10").
+        static string Number(float value) => value.ToString("0.#", CultureInfo.InvariantCulture).Replace('.', ',');
+
+        /// <summary>The effect happens at once on pick-up and has no timer (repair, nitro refill).</summary>
+        public bool IsInstant => kind == PowerUpKind.Repair || kind == PowerUpKind.NitroRefill;
+
+        /// <summary>
+        /// A config with the code defaults for an instant kind, for scenes whose spawner has no asset of that kind yet
+        /// (see <see cref="PowerUpSpawner"/>). Not saved anywhere.
+        /// </summary>
+        public static PowerUpConfig CreateDefault(PowerUpKind kind)
+        {
+            var config = CreateInstance<PowerUpConfig>();
+            config.kind = kind;
+            if (kind == PowerUpKind.Repair)
+            {
+                config.name = "Repair (default)";
+                config.displayName = "РЕМОНТ";
+                config.pickupColor = new Color(0.3f, 0.95f, 0.4f, 1f);
+            }
+            else
+            {
+                config.name = "NitroRefill (default)";
+                config.displayName = "НИТРО";
+                config.pickupColor = new Color(0.9f, 0.45f, 1f, 1f);
+            }
+
+            return config;
+        }
     }
 }

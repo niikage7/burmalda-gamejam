@@ -208,6 +208,9 @@ namespace TankBrawl.AI
                     continue;
 
                 Vector2 at = candidate.transform.position;
+                if (!InView(position, at))
+                    continue;
+
                 float sqr = (at - position).sqrMagnitude;
                 if (sqr >= bestSqr)
                     continue;
@@ -250,9 +253,22 @@ namespace TankBrawl.AI
             pickupGoal = null;
         }
 
+        // Instant kinds are wanted only when they would help now; the others when the bot does not have that effect yet.
         bool IsWanted(PowerUpPickup pickup)
         {
-            return pickup.Config != null && (powerUps == null || !powerUps.IsActive(pickup.Config.kind));
+            PowerUpConfig config = pickup.Config;
+            if (config == null)
+                return false;
+
+            switch (config.kind)
+            {
+                case PowerUpKind.Repair:
+                    return health != null && health.Current < health.Max * profile.repairWantedBelow;
+                case PowerUpKind.NitroRefill:
+                    return nitro != null && nitro.Normalized < profile.nitroRefillWantedBelow;
+                default:
+                    return powerUps == null || !powerUps.IsActive(config.kind);
+            }
         }
 
         bool IsClaimedByOther(PowerUpPickup pickup)

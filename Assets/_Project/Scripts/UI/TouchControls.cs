@@ -13,6 +13,7 @@ namespace TankBrawl.UI
     /// The stick and buttons are On-Screen Stick / Button components that emulate a gamepad,
     /// so PlayerTankInput reads them through the normal actions.
     /// Shown on mobile platforms; in the editor only when <see cref="showTouchInEditor"/> is on.
+    /// The stick's invisible touch zone is trimmed to the safe area: past its edge lives the system back gesture.
     /// </summary>
     public class TouchControls : MonoBehaviour
     {
@@ -30,8 +31,18 @@ namespace TankBrawl.UI
         [Tooltip("Label of the ammo button: shows the selected projectile type.")]
         [SerializeField] Text ammoLabel;
 
+        // Path of the stick's touch zone inside the content, and of the area it must stay in.
+        const string StickZonePath = "SafeArea/Stick/Zone";
+        const string SafeAreaPath = "SafeArea";
+
         TankPowerUps playerPowerUps;
         TankWeapon playerWeapon;
+        RectTransform stickZone;
+        RectTransform safeArea;
+        Vector2 zoneOffsetMin;
+        Vector2 zoneOffsetMax;
+        Rect fittedSafeArea;
+        Vector2Int fittedScreen;
 
         void Awake()
         {
@@ -42,6 +53,14 @@ namespace TankBrawl.UI
 
             EnsureEventSystem();
             backButton.onClick.AddListener(SceneNavigator.GoBack);
+
+            stickZone = content.transform.Find(StickZonePath) as RectTransform;
+            safeArea = content.transform.Find(SafeAreaPath) as RectTransform;
+            if (stickZone != null)
+            {
+                zoneOffsetMin = stickZone.offsetMin;
+                zoneOffsetMax = stickZone.offsetMax;
+            }
         }
 
         // Start, not Awake: the player tank of the scene must exist already.
@@ -79,6 +98,44 @@ namespace TankBrawl.UI
                 SetPowerUpTime(secondsLeft, effectName);
             else
                 SetPowerUpTime(0f);
+        }
+
+        // After SafeAreaPanel (it applies in Update), and again only when the screen or the safe area changes.
+        void LateUpdate()
+        {
+            if (stickZone == null || safeArea == null)
+                return;
+
+            var screen = new Vector2Int(Screen.width, Screen.height);
+            if (screen == fittedScreen && Screen.safeArea == fittedSafeArea)
+                return;
+
+            fittedScreen = screen;
+            fittedSafeArea = Screen.safeArea;
+            stickZone.offsetMin = zoneOffsetMin;
+            stickZone.offsetMax = zoneOffsetMax;
+            KeepInside(stickZone, safeArea);
+        }
+
+        // Moves the rectangle's edges in so that it does not stick out of the bounds (works in any canvas scale).
+        static void KeepInside(RectTransform rect, RectTransform bounds)
+        {
+            var corners = new Vector3[4];
+            var limits = new Vector3[4];
+            rect.GetWorldCorners(corners);
+            bounds.GetWorldCorners(limits);
+
+            Vector3 scale = rect.parent != null ? rect.parent.lossyScale : Vector3.one;
+            if (scale.x <= 0f || scale.y <= 0f)
+                return;
+
+            // Corner 0 is bottom-left, corner 2 is top-right.
+            float left = Mathf.Max(0f, limits[0].x - corners[0].x) / scale.x;
+            float bottom = Mathf.Max(0f, limits[0].y - corners[0].y) / scale.y;
+            float right = Mathf.Max(0f, corners[2].x - limits[2].x) / scale.x;
+            float top = Mathf.Max(0f, corners[2].y - limits[2].y) / scale.y;
+            rect.offsetMin += new Vector2(left, bottom);
+            rect.offsetMax -= new Vector2(right, top);
         }
 
         /// <summary>Shows the remaining power-up time, or hides the timer when <paramref name="secondsLeft"/> is not positive.</summary>

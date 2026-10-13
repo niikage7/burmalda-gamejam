@@ -498,19 +498,8 @@ namespace TankBrawl.UI
             SliderRow(panel.transform, "Звук", -30f, PlayerProgress.SfxVolume, value => PlayerProgress.SfxVolume = value);
             SliderRow(panel.transform, "Музыка", -140f, PlayerProgress.MusicVolume, value => PlayerProgress.MusicVolume = value);
 
-            Text vibrationLabel = UiKit.CreateText(panel.transform, "VibrationLabel", "Вибрация", 40, Color.white, TextAnchor.MiddleLeft, FontStyle.Bold);
-            UiKit.Place(vibrationLabel.rectTransform, new Vector2(0f, 1f), new Vector2(50f, -250f), new Vector2(300f, 70f));
-            vibrationLabel.rectTransform.pivot = new Vector2(0f, 1f);
-
-            Button vibration = null;
-            vibration = UiKit.CreateButton(panel.transform, "Vibration", PlayerProgress.Vibration ? "ВКЛ" : "ВЫКЛ", PlayerProgress.Vibration ? UiKit.ButtonGreen : UiKit.ButtonGray, new Vector2(240f, 80f), () =>
-            {
-                PlayerProgress.Vibration = !PlayerProgress.Vibration;
-                UiKit.SetLabel(vibration, PlayerProgress.Vibration ? "ВКЛ" : "ВЫКЛ");
-                vibration.image.color = PlayerProgress.Vibration ? UiKit.ButtonGreen : UiKit.ButtonGray;
-            }, 38);
-            UiKit.Place(vibration.image.rectTransform, new Vector2(1f, 1f), new Vector2(-70f, -245f), new Vector2(240f, 80f));
-            vibration.image.rectTransform.pivot = new Vector2(1f, 1f);
+            ToggleRow(panel.transform, "Vibration", "Вибрация", -250f, () => PlayerProgress.Vibration, value => PlayerProgress.Vibration = value);
+            ToggleRow(panel.transform, "ScreenShake", "Тряска экрана", -360f, () => PlayerProgress.ScreenShakeOn, value => PlayerProgress.ScreenShakeOn = value);
 
             Button reset = UiKit.CreateButton(panel.transform, "Reset", "СБРОСИТЬ ПРОГРЕСС", UiKit.ButtonRed, new Vector2(500f, 90f), () => confirmReset.SetActive(true), 36);
             UiKit.Place(reset.image.rectTransform, new Vector2(0f, 0f), new Vector2(50f, 40f), new Vector2(500f, 90f));
@@ -519,6 +508,22 @@ namespace TankBrawl.UI
             Button debug = UiKit.CreateButton(panel.transform, "Debug", "ОТЛАДКА", UiKit.ButtonGray, new Vector2(400f, 90f), () => Show(Screen.Debug, true), 38);
             UiKit.Place(debug.image.rectTransform, new Vector2(1f, 0f), new Vector2(-50f, 40f), new Vector2(400f, 90f));
             debug.image.rectTransform.pivot = new Vector2(1f, 0f);
+        }
+
+        // "Label ........ [ВКЛ]": a button that flips a setting and shows its state.
+        static void ToggleRow(Transform parent, string name, string label, float yFromTop, Func<bool> get, Action<bool> set)
+        {
+            Text text = UiKit.CreateText(parent, name + "Label", label, 40, Color.white, TextAnchor.MiddleLeft, FontStyle.Bold);
+            UiKit.Place(text.rectTransform, new Vector2(0f, 1f), new Vector2(50f, yFromTop), new Vector2(500f, 70f));
+
+            Button button = null;
+            button = UiKit.CreateButton(parent, name, get() ? "ВКЛ" : "ВЫКЛ", get() ? UiKit.ButtonGreen : UiKit.ButtonGray, new Vector2(240f, 80f), () =>
+            {
+                set(!get());
+                UiKit.SetLabel(button, get() ? "ВКЛ" : "ВЫКЛ");
+                button.image.color = get() ? UiKit.ButtonGreen : UiKit.ButtonGray;
+            }, 38);
+            UiKit.Place(button.image.rectTransform, new Vector2(1f, 1f), new Vector2(-70f, yFromTop + 5f), new Vector2(240f, 80f));
         }
 
         static void SliderRow(Transform parent, string label, float yFromTop, float value, UnityEngine.Events.UnityAction<float> onChanged)

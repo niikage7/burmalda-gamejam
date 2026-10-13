@@ -7,8 +7,8 @@ import sys, math
 from collections import deque
 
 TERRAIN = set('.#x~%')
-MARKERS = set('12fpZ')
-PASSABLE = set('.%12fpZ')          # where a tank can stand (bricks excluded: they come back)
+MARKERS = set('12fpZn')
+PASSABLE = set('.%12fpZn')          # where a tank can stand (bricks excluded: they come back)
 MIRROR = {'1': '2', '2': '1'}
 
 def load(path):
@@ -56,7 +56,7 @@ def main(path):
             if MIRROR.get(a, a) != b:
                 errors.append(f'asymmetric at col {c} row {r}: {a!r} vs {b!r}')
                 break
-    cells = {ch: [(c, r) for r in range(H) for c in range(W) if rows[r][c] == ch] for ch in '12fpZ'}
+    cells = {ch: [(c, r) for r in range(H) for c in range(W) if rows[r][c] == ch] for ch in '12fpZn'}
     want = {'1': (3, 3), '2': (3, 3), 'f': (8, 12), 'p': (6, 12), 'Z': (1, 4)}
     for ch, (lo, hi) in want.items():
         n = len(cells[ch])
@@ -79,6 +79,7 @@ def main(path):
     if cells['1'] and cells['2']:
         d12 = min(bfs(rows, cells['1'], PASSABLE).get(x, 10**6) for x in cells['2'])
         notes.append(f'path base1->base2: {d12} steps, straight {math.dist(cells["1"][0], cells["2"][0]):.1f}')
+    notes.append(f"nitro points {len(cells['n'])}")
     for p in cells['p']:
         near = min(math.dist(p, b) for b in cells['1'] + cells['2'])
         if near < 5: errors.append(f'power-up point {p} only {near:.1f} from a base')
