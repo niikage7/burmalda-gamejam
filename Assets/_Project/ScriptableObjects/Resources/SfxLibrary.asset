@@ -213,6 +213,6 @@ MonoBehaviour:
     - {fileID: 8300000, guid: f5a2a762e8e87da49a4f40984cefe1ee, type: 3}
     volume: 0.45
     pitch: {x: 0.95, y: 1.05}
-  menuMusic: {fileID: 0}
-  battleMusic: {fileID: 0}
+  menuMusic: {fileID: 8300000, guid: 68170c8a188a964499f2060a6ea47675, type: 3}
+  battleMusic: {fileID: 8300000, guid: ffa7b0666845d5544b85beb62518655c, type: 3}
   musicBaseVolume: 0.5
