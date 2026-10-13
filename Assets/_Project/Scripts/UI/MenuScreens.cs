@@ -324,7 +324,7 @@ namespace TankBrawl.UI
                 ProgressionConfig.Branch info = progression != null && progression.branches != null && i < progression.branches.Length ? progression.branches[i] : null;
                 string branchName = info != null ? info.displayName : branch.ToString();
 
-                Text title = UiKit.CreateText(panel.transform, "Title", branchName, 38, Color.white, TextAnchor.MiddleCenter, FontStyle.Bold);
+                Text title = UiKit.CreateText(panel.transform, "Title", branchName, 32, Color.white, TextAnchor.MiddleCenter, FontStyle.Bold);
                 UiKit.Place(title.rectTransform, new Vector2(0.5f, 1f), new Vector2(0f, -20f), new Vector2(cardWidth - 20f, 90f));
                 title.rectTransform.pivot = new Vector2(0.5f, 1f);
                 title.horizontalOverflow = HorizontalWrapMode.Wrap;
@@ -463,7 +463,7 @@ namespace TankBrawl.UI
         void BuildDebug()
         {
             RectTransform root = NewScreen(Screen.Debug);
-            Header(root, "ОТЛАДКА: ТЕСТОВЫЕ СЦЕНЫ");
+            Header(root, "ОТЛАДКА");
 
             int count = debugScenes != null ? debugScenes.Length : 0;
             int columns = 3;

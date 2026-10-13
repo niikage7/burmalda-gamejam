@@ -18,7 +18,7 @@ namespace TankBrawl.Core
 
         Vector3 velocity;
         Vector3 basePosition;
-        bool hasBase;
+        float cameraZ;
 
         public Transform Target
         {
@@ -26,10 +26,15 @@ namespace TankBrawl.Core
             set => target = value;
         }
 
+        // The depth is remembered here: other scripts may call Snap() before this component's Start.
+        void Awake()
+        {
+            cameraZ = transform.position.z;
+            basePosition = transform.position;
+        }
+
         void Start()
         {
-            basePosition = transform.position;
-            hasBase = true;
             if (target != null)
                 basePosition = DesiredPosition();
             transform.position = basePosition;
@@ -43,18 +48,11 @@ namespace TankBrawl.Core
 
             basePosition = DesiredPosition();
             velocity = Vector3.zero;
-            hasBase = true;
             transform.position = basePosition;
         }
 
         void LateUpdate()
         {
-            if (!hasBase)
-            {
-                basePosition = transform.position;
-                hasBase = true;
-            }
-
             if (target != null)
                 basePosition = Vector3.SmoothDamp(basePosition, DesiredPosition(), ref velocity, smoothTime);
 
@@ -65,7 +63,7 @@ namespace TankBrawl.Core
         Vector3 DesiredPosition()
         {
             Vector3 desired = target.position + target.up * lookAhead;
-            desired.z = basePosition.z;
+            desired.z = cameraZ;
             return desired;
         }
     }

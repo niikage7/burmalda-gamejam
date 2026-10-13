@@ -157,7 +157,7 @@ namespace TankBrawl.Match
 
         void OnHumanDamaged(TankHealth health, float amount, GameObject source)
         {
-            vignetteAlpha = Mathf.Min(0.55f, 0.18f + amount / health.Max * 0.7f);
+            vignetteAlpha = Mathf.Min(0.4f, 0.12f + amount / health.Max * 0.6f);
         }
 
         void LateUpdate()
@@ -171,11 +171,13 @@ namespace TankBrawl.Match
                 RefreshCells();
             }
 
+            // The result screen has its own headline: the banner and the hint step aside.
+            bool finished = match.IsFinished;
             SetText(title, mode.TitleText);
             SetText(timer, mode.TimerText);
-            SetText(banner, mode.BannerText);
+            SetText(banner, finished ? string.Empty : mode.BannerText);
 
-            string hintText = mode.HintText;
+            string hintText = finished ? string.Empty : mode.HintText;
             if (hintText.Length == 0 && match.IsSpectating && !match.IsOver)
                 hintText = SpectatingHint;
             SetText(hint, hintText);
@@ -244,7 +246,7 @@ namespace TankBrawl.Match
                 ScoreEntry entry = entries[i];
                 Cell cell = cells[i];
                 Color teamColor = TeamColors.Of(entry.Team);
-                cell.Background.color = new Color(teamColor.r * 0.28f, teamColor.g * 0.28f, teamColor.b * 0.28f, 0.88f);
+                cell.Background.color = new Color(teamColor.r * 0.28f, teamColor.g * 0.28f, teamColor.b * 0.28f, 1f);
                 cell.Stripe.color = teamColor;
                 cell.Frame.color = entry.IsLocal ? UiKit.Accent : new Color(0f, 0f, 0f, 0f);
                 SetText(cell.Label, entry.Label);

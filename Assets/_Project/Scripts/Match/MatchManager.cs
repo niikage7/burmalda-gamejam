@@ -52,6 +52,9 @@ namespace TankBrawl.Match
         [Tooltip("The flag zone object: switched on only in the point-holding mode.")]
         [SerializeField] GameObject capturePoint;
 
+        [Tooltip("The base pads under the team spawn points: hidden in the free-for-all (nobody has a base there).")]
+        [SerializeField] GameObject basePads;
+
         readonly List<MatchParticipant> participants = new List<MatchParticipant>();
         readonly List<SpawnPoint> spawnPoints = new List<SpawnPoint>();
         readonly List<Team> teams = new List<Team>();
@@ -155,6 +158,8 @@ namespace TankBrawl.Match
             bricks = FindObjectsByType<DestructibleTilemap>(FindObjectsInactive.Include);
             if (capturePoint != null)
                 capturePoint.SetActive(config.kind == MatchModeKind.CapturePoint);
+            if (basePads != null)
+                basePads.SetActive(config.kind != MatchModeKind.Deathmatch);
 
             Subscribe();
             MatchHud.Create(this);

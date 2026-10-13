@@ -18,8 +18,8 @@ namespace TankBrawl.UI
         public const int ReferenceHeight = 1080;
 
         public static readonly Color Dim = new Color(0.03f, 0.04f, 0.07f, 0.82f);
-        public static readonly Color PanelColor = new Color(0.11f, 0.14f, 0.2f, 0.96f);
-        public static readonly Color PanelLight = new Color(0.17f, 0.21f, 0.3f, 0.96f);
+        public static readonly Color PanelColor = new Color(0.11f, 0.14f, 0.2f, 1f);
+        public static readonly Color PanelLight = new Color(0.17f, 0.21f, 0.3f, 1f);
         public static readonly Color ButtonBlue = new Color(0.2f, 0.45f, 0.85f, 1f);
         public static readonly Color ButtonGreen = new Color(0.22f, 0.65f, 0.35f, 1f);
         public static readonly Color ButtonGray = new Color(0.32f, 0.36f, 0.45f, 1f);

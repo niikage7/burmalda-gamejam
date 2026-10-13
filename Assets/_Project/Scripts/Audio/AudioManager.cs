@@ -118,8 +118,22 @@ namespace TankBrawl.Audio
             wantedMusic = scene.name == "Menu" ? library.menuMusic : library.battleMusic;
         }
 
+        // The manager lives for the whole run, so it also writes the postponed settings to disk.
+        void OnApplicationPause(bool paused)
+        {
+            if (paused)
+                PlayerProgress.FlushIfDue(true);
+        }
+
+        void OnApplicationQuit()
+        {
+            PlayerProgress.FlushIfDue(true);
+        }
+
         void Update()
         {
+            PlayerProgress.FlushIfDue();
+
             if (library == null)
                 return;
 

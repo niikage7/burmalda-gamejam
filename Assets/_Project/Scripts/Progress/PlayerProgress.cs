@@ -27,8 +27,12 @@ namespace TankBrawl.Progress
             public int matchesWon;
         }
 
+        const float SaveDelay = 0.6f;
+
         static SaveData data;
         static ProgressionConfig config;
+        static bool saveDue;
+        static float saveAt;
 
         /// <summary>Raised after any change of gears, levels or settings.</summary>
         public static event Action Changed;
@@ -38,6 +42,7 @@ namespace TankBrawl.Progress
         {
             data = null;
             config = null;
+            saveDue = false;
             Changed = null;
         }
 
@@ -60,22 +65,33 @@ namespace TankBrawl.Progress
         public static int MatchesPlayed => Data.matchesPlayed;
         public static int MatchesWon => Data.matchesWon;
 
+        // Settings that change continuously (a slider drag) are saved a moment later, not on every tick.
         public static float SfxVolume
         {
             get => Data.sfxVolume;
-            set { Data.sfxVolume = Mathf.Clamp01(value); Commit(); }
+            set { Data.sfxVolume = Mathf.Clamp01(value); Commit(false); }
         }
 
         public static float MusicVolume
         {
             get => Data.musicVolume;
-            set { Data.musicVolume = Mathf.Clamp01(value); Commit(); }
+            set { Data.musicVolume = Mathf.Clamp01(value); Commit(false); }
         }
 
         public static bool Vibration
         {
             get => Data.vibration;
             set { Data.vibration = value; Commit(); }
+        }
+
+        /// <summary>Writes a postponed change to disk once it is due (or at once with <paramref name="force"/>). Called by the audio manager every frame.</summary>
+        public static void FlushIfDue(bool force = false)
+        {
+            if (!saveDue || data == null)
+                return;
+
+            if (force || Time.unscaledTime >= saveAt)
+                Save();
         }
 
         /// <summary>Sum of all bought levels: the threat rank R that scales the bots (balance v0.2, section 14).</summary>
@@ -178,11 +194,26 @@ namespace TankBrawl.Progress
             }
         }
 
-        static void Commit()
+        static void Commit(bool immediate = true)
         {
+            if (immediate)
+            {
+                Save();
+            }
+            else
+            {
+                saveDue = true;
+                saveAt = Time.unscaledTime + SaveDelay;
+            }
+
+            Changed?.Invoke();
+        }
+
+        static void Save()
+        {
+            saveDue = false;
             PlayerPrefs.SetString(SaveKey, JsonUtility.ToJson(data));
             PlayerPrefs.Save();
-            Changed?.Invoke();
         }
     }
 }

@@ -700,6 +700,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 01ea1a846b72c3f4888985e95ccf6178, type: 2}
   - {fileID: 11400000, guid: ed2bb8d014a8f374f8b239e8f8ead98a, type: 2}
   capturePoint: {fileID: 676968689}
+  basePads: {fileID: 620364084}
 --- !u!4 &388735667
 Transform:
   m_ObjectHideFlags: 0
