@@ -49,6 +49,7 @@ namespace TankBrawl.Match
 
             ours = AddEntry(ourTeam, "МЫ", true);
             theirs = AddEntry(theirTeam, "ВРАГ", false);
+            SetGoal("ДО " + config.roundsToWin + " ПОБЕД");
             StartRound();
         }
 
@@ -94,7 +95,7 @@ namespace TankBrawl.Match
             phase = Phase.Intro;
             phaseEndsAt = Time.time + config.roundIntroSeconds;
             SetBanner("РАУНД " + round);
-            SetTitle("РАУНД " + round + "  ·  до " + config.roundsToWin + " побед");
+            SetTitle("РАУНД " + round);
             AudioManager.Play(Sfx.RoundStart);
             RefreshEntries();
         }
@@ -154,11 +155,17 @@ namespace TankBrawl.Match
 
         void RefreshEntries()
         {
-            ours.Value = scores[(int)ourTeam].ToString();
-            theirs.Value = scores[(int)theirTeam].ToString();
-            ours.Detail = "живы " + match.CountAlive(ourTeam);
-            theirs.Detail = "живы " + match.CountAlive(theirTeam);
+            Fill(ours, scores[(int)ourTeam]);
+            Fill(theirs, scores[(int)theirTeam]);
             BumpScore();
+        }
+
+        void Fill(ScoreEntry entry, int wins)
+        {
+            if (entry.Points != wins || entry.Value.Length == 0)
+                entry.Value = wins.ToString();
+            entry.Points = wins;
+            entry.Progress = Mathf.Clamp01((float)wins / config.roundsToWin);
         }
     }
 }

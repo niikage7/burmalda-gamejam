@@ -20,6 +20,9 @@ namespace TankBrawl.Match
         string hintText = string.Empty;
         string bannerText = string.Empty;
         string titleText = string.Empty;
+        string goalText = string.Empty;
+        string statusText = string.Empty;
+        Color statusColor = Color.white;
 
         protected MatchModeBase(MatchModeConfig config)
         {
@@ -27,6 +30,9 @@ namespace TankBrawl.Match
         }
 
         public string TitleText => titleText;
+        public string GoalText => goalText;
+        public string StatusText => statusText;
+        public Color StatusColor => statusColor;
         public string TimerText => timerText;
         public string BannerText => bannerText;
         public string HintText => hintText;
@@ -40,6 +46,14 @@ namespace TankBrawl.Match
         public abstract void OnDied(MatchParticipant victim, MatchParticipant killer);
 
         protected void SetTitle(string text) => titleText = text;
+
+        protected void SetGoal(string text) => goalText = text;
+
+        protected void SetStatus(string text, Color color)
+        {
+            statusText = text ?? string.Empty;
+            statusColor = color;
+        }
 
         protected void SetBanner(string text) => bannerText = text ?? string.Empty;
 
@@ -80,7 +94,7 @@ namespace TankBrawl.Match
             hintText = seconds > 0 ? prefix + seconds : string.Empty;
         }
 
-        /// <summary>A score entry for a team; the first call decides the order of the strip.</summary>
+        /// <summary>A score entry for a team; the first call decides the order on the board.</summary>
         protected ScoreEntry AddEntry(Team team, string label, bool isLocal)
         {
             var entry = new ScoreEntry { Team = team, Label = label, IsLocal = isLocal };
