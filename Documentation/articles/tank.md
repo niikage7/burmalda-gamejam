@@ -40,6 +40,7 @@ flowchart TD
 Мёртвую зону стика контроллер не применяет: её задаёт сам Input System (Project Settings → Input System Package →
 Default Deadzone), одна на геймпад и экранный стик.
 
+`TurnRateScale` (1 у игрока) замедляет поворот ботов на низких уровнях сложности (<xref:TankBrawl.AI.DifficultyConfig>).
 `SpeedMultiplier` выставляет <xref:TankBrawl.PowerUps.TankPowerUps> (лазер), `OnDisable` сбрасывает скорость,
 толчок и множитель — возрождённый танк стартует с места.
 
@@ -61,7 +62,7 @@ Default Deadzone), одна на геймпад и экранный стик.
 
 | Событие | Когда | Кто слушает |
 | --- | --- | --- |
-| `Died(TankHealth, GameObject source)` | HP кончилось; `source` — корень танка-стрелка или `null` | <xref:TankBrawl.Match.MatchManager> (очки, киллтаб, возрождение) |
+| `Died(TankHealth, GameObject source)` | HP кончилось; `source` — корень танка-стрелка или `null` | <xref:TankBrawl.Match.MatchManager> (очки, награды, возрождение) |
 | `Damaged(TankHealth, float amount, GameObject source)` | HP реально уменьшилось | <xref:TankBrawl.Match.MatchHud> (красная виньетка у игрока) |
 | `ShieldAbsorbed(TankHealth)` | Удар поглотил щит | — |
 
@@ -111,6 +112,9 @@ stateDiagram-v2
   и зарядные точки (см. [Усиления](powerups.md#зарядные-точки-нитро)).
 - Компонент выполняется раньше контроллера (`[DefaultExecutionOrder(-10)]`), чтобы контроллер видел состояние
   нитро этого же шага. Включение нитро на ходу играет звук `NitroStart`.
+- **Шлейф:** <xref:TankBrawl.Tank.NitroTrail> (его добавляет `TankNitro`) рисует за танком на нитро короткие белые
+  полоски, которые остаются на месте и гаснут за ~0,2 с. Пул из 22 спрайтов, без аллокаций; у танка в кустах гаснет
+  вместе с ним.
 
 ## Таран
 

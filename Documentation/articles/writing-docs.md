@@ -73,6 +73,9 @@ DocFX разбирает исходники без Unity, поэтому тип�
 предупреждений — это нормально. Сгенерированные файлы (`_site`, `api`, `obj`, `articles/inspector.md`)
 в git не коммитятся.
 
+Картинки лежат в `Documentation/images` (`maps`, `powerups`, `tanks`, `screenshots`). Где нужен скриншот, которого
+ещё нет, ставится заглушка с описанием кадра — см. [Скриншоты для документации](screenshots.md).
+
 Диаграммы в статьях пишутся на [Mermaid](https://mermaid.js.org/) в блоке ` ```mermaid `, ссылки на классы —
 `<xref:TankBrawl.Tank.TankController>`.
 

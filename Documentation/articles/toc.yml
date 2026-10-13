@@ -24,5 +24,7 @@
   href: inspector.md
 - name: Рецепты
   href: recipes.md
+- name: Скриншоты для документации
+  href: screenshots.md
 - name: Как писать документацию
   href: writing-docs.md

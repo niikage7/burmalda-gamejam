@@ -1,11 +1,21 @@
 - name: Что за игра
   href: overview.md
+- name: Первый бой — пошагово
+  href: first-battle.md
 - name: Управление
   href: controls.md
+- name: Меню и гараж
+  href: menu.md
 - name: Правила боя
   href: rules.md
-- name: Как проходит матч
+- name: Усиления
+  href: powerups.md
+- name: Режимы и матч
   href: match.md
+- name: Карты
+  href: maps.md
+- name: Боты и сложность
+  href: bots.md
 - name: Что уже готово
   href: progress.md
 - name: Плейтест

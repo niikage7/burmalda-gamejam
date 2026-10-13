@@ -24,10 +24,10 @@
 | <xref:TankBrawl.PowerUps> | Усиления: пикап на карте с подписью, спавнер, эффекты на танке; зарядные точки нитро | Core, Tank, Weapons, Audio, UI (шрифт подписи) |
 | <xref:TankBrawl.Map> | Тайлмапы: кирпич, кусты, рикошет, автотайлы, тени стен, зона точки, обход бага коллайдеров | Core, Audio |
 | <xref:TankBrawl.AI> | Боты: навигация A* и «мозг» бота (FSM) | Core, Tank, Weapons, Map, PowerUps |
-| <xref:TankBrawl.Match> | Матч: менеджер, три режима, точки появления, HUD, киллтаб, пауза, экран итога | почти все |
+| <xref:TankBrawl.Match> | Матч: менеджер, три режима, точки появления, HUD с панелью счёта, пауза, экран итога | почти все |
 | <xref:TankBrawl.Progress> | Шестерёнки, уровни улучшений, настройки, сохранение | Tank, Weapons |
 | <xref:TankBrawl.Audio> | Звуки и музыка | Progress |
-| <xref:TankBrawl.UI> | Меню, экранное управление, кнопка «Назад», помощники построения интерфейса | Match, Progress, Audio, Input, PowerUps, Weapons |
+| <xref:TankBrawl.UI> | Меню (лобби, гараж, режимы, настройки), экранное управление, кнопка «Назад», стиль и фигуры интерфейса | Match, Progress, Audio, Input, PowerUps, Weapons, AI, Tank |
 
 Все области лежат в одной сборке, поэтому циклические ссылки (например, `Tank` ↔ `AI`: <xref:TankBrawl.Tank.TankStats>
 проверяет, бот ли это) компилируются. Интерфейсы `Core` меняет только ответственный (см. `CLAUDE.md`).
@@ -103,7 +103,7 @@ flowchart LR
     MM -- OnDied --> Mode
     Mode -- "FinishMatch(MatchOutcome)" --> MM
     MM -- "шестерёнки" --> PP[PlayerProgress]
-    MM --> HUD["MatchHud, KillFeed,<br/>PausePanel, MatchEndScreen"]
+    MM --> HUD["MatchHud, ScoreBoard,<br/>PausePanel, MatchEndScreen"]
 ```
 
 Подробно — в статье [Матч и режимы](match.md).
@@ -148,7 +148,7 @@ sequenceDiagram
   Её выставляют <xref:TankBrawl.Input.PlayerTankInput> и менеджер матча. В режиме «Все против всех» менеджер
   раздаёт каждому танку свою команду через <xref:TankBrawl.Core.TeamMember.SetTeam*>.
 - Цвет и русское название команды — <xref:TankBrawl.Core.TeamColors> (синие, красные, зелёные, жёлтые);
-  ими красятся счёт, киллтаб, искры и вспышки.
+  ими красятся панель счёта, искры и вспышки.
 - Снаряды, взрывы и лазер проходят сквозь танки и снаряды **своей** команды; встречные снаряды разных команд
   гасят друг друга. Таран своих не бьёт.
 - Слои Physics2D: `Tank` (6), `Wall` (7), `Water` (4). Снаряды и лазер не видят слой `Water` (летят над водой),
@@ -166,7 +166,8 @@ sequenceDiagram
 | <xref:TankBrawl.Tank.HealthBarStyle> | Размер, цвета и видимость полоски HP |
 | <xref:TankBrawl.Weapons.WeaponConfig> | Один тип снаряда: скорость, урон, перезарядка, хитбоксы, рикошеты, взрыв, звук; прибавки за уровень |
 | <xref:TankBrawl.PowerUps.PowerUpConfig> | Одно усиление: тип, длительность, числа своего типа, подпись на карте |
-| <xref:TankBrawl.AI.BotProfile> | Характер бота: реакция, разброс, дистанции, таран, отступление, увороты, точка |
+| <xref:TankBrawl.AI.BotProfile> | Характер бота: реакция, разброс, дистанции, таран, отступление, увороты, точка, обзор, тактика |
+| <xref:TankBrawl.AI.DifficultyConfig> | Уровни сложности: множители чисел профиля бота |
 | <xref:TankBrawl.Match.MatchModeConfig> | Один режим: защита при появлении, возрождение, лимиты, раунды, очки, доп. цель |
 | <xref:TankBrawl.Progress.ProgressionConfig> | Награды в шестерёнках, цены и описания веток улучшений |
 | <xref:TankBrawl.Audio.SfxLibrary> | Какие клипы играют для каждого звука, музыка |

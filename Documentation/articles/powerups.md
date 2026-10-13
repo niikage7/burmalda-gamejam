@@ -70,8 +70,14 @@ flowchart LR
 
 - Триггер: первый танк **любой команды** с `TankPowerUps`, въехавший в него, получает эффект; пикап исчезает
   со звуком и вспышкой частиц.
-- Цвет спрайта — `pickupColor` из конфига (пока это цветной круг-заглушка), лёгкая пульсация размера
-  (`pulseAmount`, `pulsePeriod`).
+- Картинка — `pickupSprite` из конфига (значки 64 px в `Art/PowerUps/Resources/PowerUpIcons/<Вид>.png`; конфиги
+  по умолчанию для ремонта и заряда нитро грузят их оттуда сами). Нет картинки — круг цвета `pickupColor`. Цвет
+  `pickupColor` красит и вспышку при подборе, и кольцо под танком. Лёгкая пульсация размера (`pulseAmount`, `pulsePeriod`).
+
+| ![](../images/powerups/RapidFire.png) | ![](../images/powerups/ExplosiveShells.png) | ![](../images/powerups/Laser.png) | ![](../images/powerups/Shield.png) | ![](../images/powerups/Repair.png) | ![](../images/powerups/NitroRefill.png) |
+| --- | --- | --- | --- | --- | --- |
+| `RapidFire` | `ExplosiveShells` | `Laser` | `Shield` | `Repair` | `NitroRefill` |
+
 - **Подпись**: над пикапом белый текст с тенью — <xref:TankBrawl.PowerUps.PowerUpConfig.MapLabel>: поле `mapLabel`,
   а если оно пустое — строка из чисел конфига («Стрельба ×2 · 10 с», «+30 HP»). Это `TextMesh` встроенным шрифтом
   интерфейса, порядок отрисовки 17 (над танками и полосками HP). Подпись не пульсирует вместе с пикапом; высота —

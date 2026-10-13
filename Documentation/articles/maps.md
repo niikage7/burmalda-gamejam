@@ -53,6 +53,8 @@
 
 Класс `MapBuilder` (`Assets/_Project/Editor/MapBuilder.cs`), меню Unity **TankBrawl → Maps**:
 
+![Меню генератора карт](../images/screenshots/editor-maps-menu.png)
+
 | Пункт | Что делает |
 | --- | --- |
 | **Build New Maps** | Строит сцены для раскладок, у которых сцены ещё нет; существующие пропускает |
