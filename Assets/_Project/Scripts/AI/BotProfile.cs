@@ -19,6 +19,9 @@ namespace TankBrawl.AI
         [Tooltip("The bot aims off by a random angle within ± this value, deg. Re-rolled after every shot. Balance v0.2: 8")]
         [Min(0f)] public float aimSpreadDegrees = 8f;
 
+        [Tooltip("The aim also drifts slowly around the target by up to ± this value, deg (like an unsteady hand). 0 = none. Set by the difficulty level.")]
+        [Min(0f)] public float aimWobbleDegrees;
+
         [Tooltip("The bot shoots when the hull is off the aim direction by no more than this, deg.")]
         [Range(0f, 45f)] public float fireAlignTolerance = 2f;
 

@@ -72,7 +72,15 @@ namespace TankBrawl.AI
         static readonly List<TeamMember> Candidates = new List<TeamMember>();
         static float candidatesRefreshAt;
 
+        // Slow drift of the aim (see BotProfile.aimWobbleDegrees): Perlin noise speed, 1/s.
+        const float AimWobbleSpeed = 0.7f;
+
         [SerializeField] BotProfile profile;
+
+        // The profile above scaled by the difficulty level of the match (a private copy, destroyed with the bot).
+        BotProfile scaledProfile;
+        float turnRateScale = 1f;
+        float wobbleSeed;
 
         Rigidbody2D body;
         TankController tank;
@@ -192,6 +200,27 @@ namespace TankBrawl.AI
 
             if (profile == null)
                 Debug.LogError($"{name}: BotProfile is not assigned, the bot will stand still.", this);
+            else
+                ApplyDifficulty();
+        }
+
+        // The difficulty of the match scales the character's numbers; the asset itself stays untouched.
+        void ApplyDifficulty()
+        {
+            DifficultyConfig.Level level = DifficultyConfig.Current;
+            wobbleSeed = Random.value * 100f;
+            if (level == null)
+                return;
+
+            scaledProfile = level.CreateProfile(profile);
+            profile = scaledProfile;
+            turnRateScale = level.turnRateScale;
+        }
+
+        void OnDestroy()
+        {
+            if (scaledProfile != null)
+                Destroy(scaledProfile);
         }
 
         void OnEnable()
@@ -207,6 +236,7 @@ namespace TankBrawl.AI
                 driveThresholdSqr = tank.Config.driveThreshold * tank.Config.driveThreshold;
             }
 
+            tank.TurnRateScale = turnRateScale;
             weapon.Fired += OnFired;
             ResetState();
         }
@@ -892,7 +922,11 @@ namespace TankBrawl.AI
 
             Vector2 direction = point - position;
             direction = direction.sqrMagnitude > Mathf.Epsilon ? direction.normalized : tank.Forward;
-            return Quaternion.Euler(0f, 0f, aimOffsetDegrees) * direction;
+
+            float error = aimOffsetDegrees;
+            if (profile.aimWobbleDegrees > 0f)
+                error += (Mathf.PerlinNoise(Time.time * AimWobbleSpeed, wobbleSeed) * 2f - 1f) * profile.aimWobbleDegrees;
+            return Quaternion.Euler(0f, 0f, error) * direction;
         }
 
         // A shot that hits steel right in front of the muzzle bounces back at the shooter.

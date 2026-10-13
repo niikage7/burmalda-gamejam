@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using TankBrawl.AI;
 using TankBrawl.Audio;
 using TankBrawl.Match;
 using TankBrawl.Progress;
@@ -70,6 +71,21 @@ namespace TankBrawl.UI
         readonly List<SceneEntry> availableMaps = new List<SceneEntry>();
         int mapIndex;
         Text mapLabel;
+
+        // A mode card: its difficulty picker (the unlocked levels depend on the mode).
+        sealed class ModeCard
+        {
+            public MatchModeConfig Config;
+            public int Mode;
+            public int Difficulty;
+            public Text DifficultyLabel;
+            public Text LockHint;
+            public Button Previous;
+            public Button Next;
+            public Button Play;
+        }
+
+        readonly List<ModeCard> modeCards = new List<ModeCard>();
 
         sealed class UpgradeCard
         {
@@ -250,7 +266,7 @@ namespace TankBrawl.UI
             {
                 MatchModeConfig config = modes[i];
                 Image card = UiKit.CreatePanel(root, "Mode" + i, UiKit.PanelColor);
-                UiKit.Place(card.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(x, -40f), new Vector2(cardWidth, 640f));
+                UiKit.Place(card.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(x, -60f), new Vector2(cardWidth, 680f));
 
                 Image stripe = UiKit.CreateImage(card.transform, "Stripe", headerColors[i % headerColors.Length]);
                 stripe.rectTransform.anchorMin = new Vector2(0f, 1f);
@@ -276,16 +292,20 @@ namespace TankBrawl.UI
                 name.horizontalOverflow = HorizontalWrapMode.Wrap;
 
                 Text text = UiKit.CreateText(card.transform, "Description", description, 30, UiKit.Muted, TextAnchor.UpperCenter, FontStyle.Normal, false);
-                UiKit.Place(text.rectTransform, new Vector2(0.5f, 1f), new Vector2(0f, icon != null ? -390f : -200f), new Vector2(cardWidth - 70f, 250f));
+                UiKit.Place(text.rectTransform, new Vector2(0.5f, 1f), new Vector2(0f, icon != null ? -390f : -200f), new Vector2(cardWidth - 70f, 210f));
                 text.rectTransform.pivot = new Vector2(0.5f, 1f);
                 text.horizontalOverflow = HorizontalWrapMode.Wrap;
                 text.verticalOverflow = VerticalWrapMode.Truncate;
 
-                MatchModeConfig picked = config;
-                Button play = UiKit.CreateButton(card.transform, "Play", "В БОЙ", UiKit.ButtonGreen, new Vector2(cardWidth - 80f, 100f), () => StartMatch(picked), 46);
+                var modeCard = new ModeCard { Config = config, Mode = config != null ? (int)config.kind : i };
+                modeCards.Add(modeCard);
+                BuildDifficultyPicker(card.transform, modeCard, cardWidth);
+
+                Button play = UiKit.CreateButton(card.transform, "Play", "В БОЙ", UiKit.ButtonGreen, new Vector2(cardWidth - 80f, 100f), () => StartMatch(modeCard), 46);
                 UiKit.Place(play.image.rectTransform, new Vector2(0.5f, 0f), new Vector2(0f, 30f), new Vector2(cardWidth - 80f, 100f));
                 play.image.rectTransform.pivot = new Vector2(0.5f, 0f);
-                play.interactable = config != null;
+                modeCard.Play = play;
+                RefreshModeCard(modeCard);
 
                 x += cardWidth + gap;
             }
@@ -356,9 +376,74 @@ namespace TankBrawl.UI
                 mapLabel.text = "КАРТА:  " + availableMaps[mapIndex].label;
         }
 
-        void StartMatch(MatchModeConfig config)
+        // "< Сложность: Средняя >" above the start button. Levels the player has not opened yet can be looked at but not started.
+        void BuildDifficultyPicker(Transform card, ModeCard modeCard, float cardWidth)
         {
-            if (config == null)
+            int count = DifficultyConfig.Count;
+            int highest = Mathf.Min(PlayerProgress.HighestUnlockedDifficulty(modeCard.Mode), count - 1);
+            int last = modeCard.Mode >= 0 && modeCard.Mode < MatchSession.LastDifficulty.Length ? MatchSession.LastDifficulty[modeCard.Mode] : -1;
+            modeCard.Difficulty = last < 0 ? highest : Mathf.Min(last, highest);
+
+            float buttonCentre = cardWidth * 0.5f - 65f;
+            modeCard.Previous = UiKit.CreateButton(card, "DifficultyPrevious", "<", UiKit.ButtonGray, new Vector2(70f, 70f), () => ShiftDifficulty(modeCard, -1), 40);
+            UiKit.Place(modeCard.Previous.image.rectTransform, new Vector2(0.5f, 0f), new Vector2(-buttonCentre, 185f), new Vector2(70f, 70f));
+
+            modeCard.DifficultyLabel = UiKit.CreateText(card, "Difficulty", string.Empty, 32, Color.white, TextAnchor.MiddleCenter, FontStyle.Bold);
+            UiKit.Place(modeCard.DifficultyLabel.rectTransform, new Vector2(0.5f, 0f), new Vector2(0f, 185f), new Vector2(cardWidth - 190f, 70f));
+
+            modeCard.Next = UiKit.CreateButton(card, "DifficultyNext", ">", UiKit.ButtonGray, new Vector2(70f, 70f), () => ShiftDifficulty(modeCard, 1), 40);
+            UiKit.Place(modeCard.Next.image.rectTransform, new Vector2(0.5f, 0f), new Vector2(buttonCentre, 185f), new Vector2(70f, 70f));
+
+            modeCard.LockHint = UiKit.CreateText(card, "DifficultyHint", string.Empty, 24, UiKit.Bad, TextAnchor.MiddleCenter, FontStyle.Normal);
+            UiKit.Place(modeCard.LockHint.rectTransform, new Vector2(0.5f, 0f), new Vector2(0f, 237f), new Vector2(cardWidth - 40f, 30f));
+
+            if (count < 2)
+            {
+                modeCard.Previous.gameObject.SetActive(false);
+                modeCard.Next.gameObject.SetActive(false);
+                modeCard.DifficultyLabel.gameObject.SetActive(false);
+            }
+        }
+
+        void ShiftDifficulty(ModeCard modeCard, int step)
+        {
+            int next = Mathf.Clamp(modeCard.Difficulty + step, 0, DifficultyConfig.Count - 1);
+            if (next == modeCard.Difficulty)
+                return;
+
+            modeCard.Difficulty = next;
+            if (modeCard.Mode >= 0 && modeCard.Mode < MatchSession.LastDifficulty.Length)
+                MatchSession.LastDifficulty[modeCard.Mode] = next;
+            RefreshModeCard(modeCard);
+        }
+
+        void RefreshModeCard(ModeCard modeCard)
+        {
+            if (modeCard.Play == null)
+                return;
+
+            int count = DifficultyConfig.Count;
+            bool unlocked = PlayerProgress.IsDifficultyUnlocked(modeCard.Mode, modeCard.Difficulty);
+            modeCard.DifficultyLabel.text = "Сложность: " + DifficultyConfig.NameOf(modeCard.Difficulty);
+            modeCard.DifficultyLabel.color = unlocked ? Color.white : UiKit.Muted;
+            modeCard.LockHint.text = unlocked || modeCard.Difficulty < 1
+                ? string.Empty
+                : "Закрыта: победите на «" + DifficultyConfig.NameOf(modeCard.Difficulty - 1) + "»";
+            modeCard.Previous.interactable = modeCard.Difficulty > 0;
+            modeCard.Next.interactable = modeCard.Difficulty < count - 1;
+            modeCard.Play.interactable = modeCard.Config != null && unlocked;
+        }
+
+        void RefreshModeCards()
+        {
+            foreach (ModeCard modeCard in modeCards)
+                RefreshModeCard(modeCard);
+        }
+
+        void StartMatch(ModeCard modeCard)
+        {
+            MatchModeConfig config = modeCard.Config;
+            if (config == null || !PlayerProgress.IsDifficultyUnlocked(modeCard.Mode, modeCard.Difficulty))
                 return;
 
             string scene = availableMaps.Count > 0 ? availableMaps[mapIndex].sceneName : arenaScene;
@@ -370,6 +455,7 @@ namespace TankBrawl.UI
 
             MatchSession.Selected = config;
             MatchSession.MapScene = scene;
+            DifficultyConfig.Selected = modeCard.Difficulty;
             SceneManager.LoadScene(scene);
         }
 
@@ -558,7 +644,7 @@ namespace TankBrawl.UI
                 string sceneName = debugScenes[i].sceneName;
                 bool available = Application.CanStreamedLevelBeLoaded(sceneName);
                 string label = available ? debugScenes[i].label : debugScenes[i].label + "  (нет в Build Settings)";
-                Button button = UiKit.CreateButton(root, "Scene_" + sceneName, label, available ? UiKit.ButtonBlue : UiKit.ButtonGray, new Vector2(width, height), () => SceneManager.LoadScene(sceneName), 32);
+                Button button = UiKit.CreateButton(root, "Scene_" + sceneName, label, available ? UiKit.ButtonBlue : UiKit.ButtonGray, new Vector2(width, height), () => { DifficultyConfig.Selected = -1; SceneManager.LoadScene(sceneName); }, 32);
                 UiKit.Place(button.image.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(x, y), new Vector2(width, height));
                 button.interactable = available;
             }
@@ -568,11 +654,19 @@ namespace TankBrawl.UI
                 PlayerProgress.AddGears(DebugGift);
                 AudioManager.Play(Sfx.GearGain);
             }, 34);
-            UiKit.Place(gift.image.rectTransform, new Vector2(0.5f, 0f), new Vector2(-(width + gapX) * 0.5f, 50f), new Vector2(width, height));
+            UiKit.Place(gift.image.rectTransform, new Vector2(0.5f, 0f), new Vector2(-(width + gapX), 50f), new Vector2(width, height));
             gift.image.rectTransform.pivot = new Vector2(0.5f, 0f);
 
+            Button unlock = UiKit.CreateButton(root, "UnlockDifficulties", "Открыть все сложности", UiKit.ButtonBlue, new Vector2(width, height), () =>
+            {
+                PlayerProgress.UnlockAllDifficulties(DifficultyConfig.Count);
+                AudioManager.Play(Sfx.GearGain);
+            }, 34);
+            UiKit.Place(unlock.image.rectTransform, new Vector2(0.5f, 0f), new Vector2(0f, 50f), new Vector2(width, height));
+            unlock.image.rectTransform.pivot = new Vector2(0.5f, 0f);
+
             Button reset = UiKit.CreateButton(root, "ResetFromDebug", "Сбросить прогресс", UiKit.ButtonRed, new Vector2(width, height), () => confirmReset.SetActive(true), 34);
-            UiKit.Place(reset.image.rectTransform, new Vector2(0.5f, 0f), new Vector2((width + gapX) * 0.5f, 50f), new Vector2(width, height));
+            UiKit.Place(reset.image.rectTransform, new Vector2(0.5f, 0f), new Vector2(width + gapX, 50f), new Vector2(width, height));
             reset.image.rectTransform.pivot = new Vector2(0.5f, 0f);
         }
 
@@ -650,6 +744,7 @@ namespace TankBrawl.UI
 
             walletText.text = PlayerProgress.Gears.ToString();
             RefreshUpgrades();
+            RefreshModeCards();
             if (statsText != null)
                 statsText.text = "Матчей: " + PlayerProgress.MatchesPlayed + "   ·   Побед: " + PlayerProgress.MatchesWon + "   ·   Ранг угрозы: " + PlayerProgress.ThreatRank;
         }

@@ -44,6 +44,7 @@ namespace TankBrawl.Match
         Text scoreHeader;
         Text totalLabel;
         Text walletLabel;
+        Text unlockLabel;
         readonly Row[] rows = new Row[MaxRows];
         readonly RewardRow[] rewards = new RewardRow[MaxRewards];
 
@@ -82,6 +83,12 @@ namespace TankBrawl.Match
             summary = UiKit.CreateText(panel.transform, "Summary", string.Empty, 36, UiKit.Muted, TextAnchor.MiddleCenter, FontStyle.Bold);
             UiKit.Place(summary.rectTransform, new Vector2(0.5f, 1f), new Vector2(0f, -150f), new Vector2(1200f, 50f));
             summary.rectTransform.pivot = new Vector2(0.5f, 1f);
+
+            // Above the buttons, under the table: the line about a newly opened difficulty.
+            unlockLabel = UiKit.CreateText(panel.transform, "Unlock", string.Empty, 40, UiKit.Good, TextAnchor.MiddleCenter, FontStyle.Bold);
+            UiKit.Place(unlockLabel.rectTransform, new Vector2(0.5f, 0f), new Vector2(0f, 170f), new Vector2(1200f, 60f));
+            unlockLabel.rectTransform.pivot = new Vector2(0.5f, 0f);
+            unlockLabel.gameObject.SetActive(false);
 
             BuildTable(panel.transform);
             BuildRewards(panel.transform);
@@ -200,7 +207,7 @@ namespace TankBrawl.Match
         {
             headline.text = result.Headline;
             headline.color = result.HumanWon ? UiKit.Good : UiKit.Bad;
-            summary.text = result.ModeName + "   ·   " + result.Summary;
+            summary.text = result.ModeName + "   ·   " + result.Summary + "   ·   " + result.DifficultyName;
             scoreHeader.gameObject.SetActive(result.ShowScoreColumn);
 
             for (int i = 0; i < MaxRows; i++)
@@ -234,6 +241,8 @@ namespace TankBrawl.Match
 
             totalLabel.text = result.TotalGears > 0 ? "Итого: +" + result.TotalGears : "Наград нет";
             walletLabel.text = "Всего шестерёнок: " + PlayerProgress.Gears;
+            unlockLabel.text = result.UnlockText ?? string.Empty;
+            unlockLabel.gameObject.SetActive(!string.IsNullOrEmpty(result.UnlockText));
             root.SetActive(true);
             AudioManager.Play(result.HumanWon ? Sfx.RoundWin : Sfx.RoundLose);
         }

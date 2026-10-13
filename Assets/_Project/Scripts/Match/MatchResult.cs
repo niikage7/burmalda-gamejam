@@ -41,6 +41,13 @@ namespace TankBrawl.Match
         public bool HumanWon;
         public string Headline;
         public string Summary;
+
+        /// <summary>Name of the difficulty the match was played on.</summary>
+        public string DifficultyName;
+
+        /// <summary>Set when this win opened the next difficulty ("Открыта сложность: Сложная").</summary>
+        public string UnlockText;
+
         public bool ShowScoreColumn;
         public readonly List<ResultRow> Rows = new List<ResultRow>();
         public readonly List<RewardLine> Rewards = new List<RewardLine>();

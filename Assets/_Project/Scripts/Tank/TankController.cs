@@ -35,6 +35,9 @@ namespace TankBrawl.Tank
         /// <summary>Scales the drive speed, nitro included (the laser power-up slows the tank). 1 = normal.</summary>
         public float SpeedMultiplier { get; set; } = 1f;
 
+        /// <summary>Scales the hull turn speed. 1 = the config's rotation speed; bots on easier difficulty levels turn slower.</summary>
+        public float TurnRateScale { get; set; } = 1f;
+
         /// <summary>The input asked for driving in the last physics step (not just turning in place).</summary>
         public bool IsDriving { get; private set; }
 
@@ -72,7 +75,7 @@ namespace TankBrawl.Tank
             if (move.sqrMagnitude > 0f)
             {
                 float targetAngle = Mathf.Atan2(move.y, move.x) * Mathf.Rad2Deg - 90f;
-                angle = Mathf.MoveTowardsAngle(angle, targetAngle, config.rotationSpeed * dt);
+                angle = Mathf.MoveTowardsAngle(angle, targetAngle, config.rotationSpeed * TurnRateScale * dt);
 
                 bool aligned = Mathf.Abs(Mathf.DeltaAngle(angle, targetAngle)) <= config.maxDriveAngle;
                 if (aligned && move.magnitude >= config.driveThreshold)

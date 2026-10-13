@@ -1,3 +1,4 @@
+using TankBrawl.AI;
 using TankBrawl.Audio;
 using TankBrawl.Match;
 using TankBrawl.Progress;
@@ -29,6 +30,7 @@ namespace TankBrawl.EditorTools
             SetupWeapons();
             SetupProgression();
             SetupModes();
+            SetupDifficulty();
             GetOrCreate<UiTheme>(ResourcesFolder + "/UiTheme.asset");
 
             AssetDatabase.SaveAssets();
@@ -138,6 +140,39 @@ namespace TankBrawl.EditorTools
             info.description = description;
             info.baseCost = baseCost;
             config.branches[(int)branch] = info;
+        }
+
+        // Bot difficulty levels. Medium is about the bots as they were before the levels existed, but more human (slower turning,
+        // an unsteady aim); easy is clearly weaker, hard is more accurate, tougher and quicker to react. First guess, tune in playtests.
+        static void SetupDifficulty()
+        {
+            var config = GetOrCreate<DifficultyConfig>(ResourcesFolder + "/DifficultyConfig.asset");
+            config.defaultLevel = 1;
+            config.levels = new[]
+            {
+                new DifficultyConfig.Level
+                {
+                    displayName = "Лёгкая",
+                    description = "Боты медленно поворачиваются, часто промахиваются и плохо уворачиваются.",
+                    turnRateScale = 0.45f, statScale = 0.5f, reactionScale = 2.5f, aimSpreadScale = 2.2f, aimWobbleDegrees = 6f,
+                    fireAlignScale = 3f, leadScale = 0.3f, dodgeChanceScale = 0.3f, aggressionScale = 0.4f, decisionScale = 1.6f
+                },
+                new DifficultyConfig.Level
+                {
+                    displayName = "Средняя",
+                    description = "Боты стреляют метко, но поворачиваются и целятся как люди.",
+                    turnRateScale = 0.7f, statScale = 1f, reactionScale = 1.5f, aimSpreadScale = 1.3f, aimWobbleDegrees = 3f,
+                    fireAlignScale = 1.5f, leadScale = 0.8f, dodgeChanceScale = 0.8f, aggressionScale = 0.8f, decisionScale = 1.2f
+                },
+                new DifficultyConfig.Level
+                {
+                    displayName = "Сложная",
+                    description = "Боты быстрее реагируют, точнее целятся и крепче: на 30% сильнее по улучшениям.",
+                    turnRateScale = 0.9f, statScale = 1.3f, reactionScale = 1f, aimSpreadScale = 0.8f, aimWobbleDegrees = 1.5f,
+                    fireAlignScale = 1f, leadScale = 1f, dodgeChanceScale = 1f, aggressionScale = 1f, decisionScale = 1f
+                }
+            };
+            EditorUtility.SetDirty(config);
         }
 
         // The three modes. Numbers are the first guess (the user delegated the first balance): to be tuned in playtests.

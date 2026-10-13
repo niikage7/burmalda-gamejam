@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using TankBrawl.AI;
 using TankBrawl.Audio;
 using TankBrawl.Core;
 using TankBrawl.Input;
@@ -658,6 +659,7 @@ namespace TankBrawl.Match
                 HumanWon = outcome.HumanWon,
                 Headline = outcome.HumanWon ? "ПОБЕДА" : "ПОРАЖЕНИЕ",
                 Summary = outcome.Summary,
+                DifficultyName = DifficultyConfig.NameOf(DifficultyConfig.CurrentIndex),
                 ShowScoreColumn = config.kind == MatchModeKind.Deathmatch
             };
 
@@ -683,6 +685,13 @@ namespace TankBrawl.Match
             if (unpaid > 0)
                 PlayerProgress.AddGears(unpaid);
             PlayerProgress.RegisterMatch(outcome.HumanWon);
+            if (outcome.HumanWon)
+            {
+                int opened = PlayerProgress.UnlockNextDifficulty((int)config.kind, DifficultyConfig.CurrentIndex, DifficultyConfig.Count);
+                if (opened >= 0)
+                    result.UnlockText = "Открыта сложность: " + DifficultyConfig.NameOf(opened);
+            }
+
             result.TotalGears = total;
 
             // The table: the human's team first, inside a team by kills; deathmatch by points.

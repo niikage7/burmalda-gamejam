@@ -12,6 +12,9 @@ namespace TankBrawl.Progress
     {
         public const int BranchCount = 5;
 
+        /// <summary>Game modes that have their own unlocked difficulty (the order of <c>MatchModeKind</c>).</summary>
+        public const int ModeCount = 3;
+
         const string SaveKey = "tankbrawl.progress.v1";
         const string ConfigResource = "ProgressionConfig";
 
@@ -20,6 +23,7 @@ namespace TankBrawl.Progress
         {
             public int gears;
             public int[] levels = new int[BranchCount];
+            public int[] unlockedDifficulty = new int[ModeCount];
             public float sfxVolume = 1f;
             public float musicVolume = 0.6f;
             public bool vibration = true;
@@ -154,7 +158,44 @@ namespace TankBrawl.Progress
             Commit();
         }
 
-        /// <summary>Forgets everything (gears, levels, statistics) but keeps the settings.</summary>
+        /// <summary>The hardest difficulty (index) the player may start in the mode. The easiest one is always open.</summary>
+        public static int HighestUnlockedDifficulty(int mode)
+        {
+            return mode >= 0 && mode < ModeCount ? Data.unlockedDifficulty[mode] : 0;
+        }
+
+        public static bool IsDifficultyUnlocked(int mode, int difficulty)
+        {
+            return difficulty <= HighestUnlockedDifficulty(mode);
+        }
+
+        /// <summary>
+        /// A win in the mode on the difficulty <paramref name="beaten"/> opens the next one. Only a difficulty that was open counts
+        /// (a scene started directly from the editor cannot open anything). Returns the newly opened index or -1.
+        /// </summary>
+        public static int UnlockNextDifficulty(int mode, int beaten, int difficultyCount)
+        {
+            if (mode < 0 || mode >= ModeCount)
+                return -1;
+
+            int next = beaten + 1;
+            if (beaten > Data.unlockedDifficulty[mode] || next >= difficultyCount || next <= Data.unlockedDifficulty[mode])
+                return -1;
+
+            Data.unlockedDifficulty[mode] = next;
+            Commit();
+            return next;
+        }
+
+        /// <summary>Debug: opens every difficulty in every mode.</summary>
+        public static void UnlockAllDifficulties(int difficultyCount)
+        {
+            for (int i = 0; i < ModeCount; i++)
+                Data.unlockedDifficulty[i] = Mathf.Max(0, difficultyCount - 1);
+            Commit();
+        }
+
+        /// <summary>Forgets everything (gears, levels, unlocked difficulties, statistics) but keeps the settings.</summary>
         public static void ResetProgress()
         {
             SaveData fresh = new SaveData
@@ -194,6 +235,14 @@ namespace TankBrawl.Progress
 
             if (data == null)
                 data = new SaveData();
+            if (data.unlockedDifficulty == null || data.unlockedDifficulty.Length != ModeCount)
+            {
+                var fixedUnlocked = new int[ModeCount];
+                if (data.unlockedDifficulty != null)
+                    Array.Copy(data.unlockedDifficulty, fixedUnlocked, Mathf.Min(data.unlockedDifficulty.Length, ModeCount));
+                data.unlockedDifficulty = fixedUnlocked;
+            }
+
             if (data.levels == null || data.levels.Length != BranchCount)
             {
                 var fixedLevels = new int[BranchCount];

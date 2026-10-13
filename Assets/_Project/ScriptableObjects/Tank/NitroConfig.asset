@@ -17,6 +17,7 @@ MonoBehaviour:
   speed: 5
   regenPerSecond: 0.07
   reactivateStock: 0.1
+  minDrainSpeed: 1
   ramMinSpeed: 4
   ramMaxAngle: 45
   ramDamage: 25

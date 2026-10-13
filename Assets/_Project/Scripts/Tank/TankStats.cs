@@ -8,7 +8,7 @@ namespace TankBrawl.Tank
     /// <summary>
     /// Upgrade levels of one tank. The components that use a level (health, drive, nitro, weapon) read it from here and
     /// multiply it by the per-level numbers in their own configs, so level 0 is exactly the base config.
-    /// The human's levels are what the player bought; a bot gets the threat rank R in hull, engine, weapon and fire rate
+    /// The human's levels are what the player bought; a bot gets the threat rank R (scaled by the difficulty level) in hull, engine, weapon and fire rate
     /// (balance v0.2, section 14) and nothing in nitro. A tank with neither input (a dummy) stays at level 0.
     /// </summary>
     [DefaultExecutionOrder(-100)]
@@ -38,7 +38,8 @@ namespace TankBrawl.Tank
             }
             else if (TryGetComponent(out BotTankInput _))
             {
-                int rank = PlayerProgress.ThreatRank;
+                DifficultyConfig.Level difficulty = DifficultyConfig.Current;
+                int rank = Mathf.RoundToInt(PlayerProgress.ThreatRank * (difficulty != null ? difficulty.statScale : 1f));
                 HullLevel = EngineLevel = WeaponLevel = FireLevel = rank;
                 NitroLevel = 0;
             }

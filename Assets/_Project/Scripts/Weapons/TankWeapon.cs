@@ -30,6 +30,9 @@ namespace TankBrawl.Weapons
         TankStats stats;
         ITankInput input;
         WeaponConfig overrideWeapon;
+
+        // The selected ammo type survives a respawn (OnEnable does not reset it): the button label only updates on AmmoChanged,
+        // so a reset here would leave the label showing a type the gun no longer uses. A new match reloads the scene.
         int ammoIndex;
         float nextFireTime;
         float bufferedFireUntil;
@@ -89,7 +92,6 @@ namespace TankBrawl.Weapons
         {
             nextFireTime = 0f;
             bufferedFireUntil = 0f;
-            ammoIndex = 0;
             overrideWeapon = null;
             FireIntervalScale = 1f;
             Suppressed = false;
