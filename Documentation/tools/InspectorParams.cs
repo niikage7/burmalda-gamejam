@@ -21,10 +21,11 @@ if (!Directory.Exists(ScriptsDir))
 }
 
 var namespaceRx = new Regex(@"^\s*namespace\s+([\w.]+)");
-var typeRx = new Regex(@"^\s*(?:public\s+|internal\s+)?(?:static\s+|abstract\s+|sealed\s+)*(?:partial\s+)?(class|struct)\s+(\w+)");
+var typeRx = new Regex(@"^\s*(?<vis>(?:public|internal|private|protected)\s+)*(?:static\s+|abstract\s+|sealed\s+|readonly\s+)*(?:partial\s+)?(class|struct)\s+(\w+)");
 var headerRx = new Regex(@"\[Header\(""((?:[^""\\]|\\.)*)""\)\]");
 var tooltipRx = new Regex(@"Tooltip\(""((?:[^""\\]|\\.)*)""\)");
-var fieldRx = new Regex(@"^\s*(?<attrs>(?:\[[^\]]*\]\s*)*)(?<mods>(?:(?:public|private|protected|internal|static|readonly|const)\s+)*)(?<type>[\w.<>\[\], ]+?)\s+(?<name>\w+)\s*(?:=\s*(?<def>[^;]+))?;\s*(?://.*)?$");
+// "= value" is a default; "=> value" is a property, not a field.
+var fieldRx = new Regex(@"^\s*(?<attrs>(?:\[[^\]]*\]\s*)*)(?<mods>(?:(?:public|private|protected|internal|static|readonly|const|event)\s+)*)(?<type>[\w.<>\[\], ]+?)\s+(?<name>\w+)\s*(?:=(?!>)\s*(?<def>[^;]+))?;\s*(?://.*)?$");
 
 var tables = new List<TypeTable>();
 
@@ -48,9 +49,11 @@ foreach (string file in Directory.GetFiles(ScriptsDir, "*.cs", SearchOption.AllD
         if (typeMatch.Success)
         {
             // Unity serializes fields of components, ScriptableObjects and [Serializable] types only.
+            // A non-public type (such as a private save-data class) has no API page to link to, so it is skipped too.
             string outer = typeStack.Count > 0 ? typeStack.Peek().Name + "." : "";
-            bool serializable = line.Contains("MonoBehaviour") || line.Contains("ScriptableObject")
-                                || pendingAttrs.ToString().Contains("Serializable");
+            bool serializable = typeMatch.Groups["vis"].Value.Contains("public")
+                                && (line.Contains("MonoBehaviour") || line.Contains("ScriptableObject")
+                                    || pendingAttrs.ToString().Contains("Serializable"));
             typeStack.Push((outer + typeMatch.Groups[2].Value, depth + 1, serializable));
             header = null;
             pendingAttrs.Clear();
@@ -67,8 +70,9 @@ foreach (string file in Directory.GetFiles(ScriptsDir, "*.cs", SearchOption.AllD
             {
                 string attrs = pendingAttrs + field.Groups["attrs"].Value;
                 string mods = field.Groups["mods"].Value;
-                bool serialized = attrs.Contains("SerializeField")
-                                  || (mods.Contains("public") && !mods.Contains("static") && !mods.Contains("readonly") && !mods.Contains("const"));
+                bool serialized = !mods.Contains("event")
+                                  && (attrs.Contains("SerializeField")
+                                      || (mods.Contains("public") && !mods.Contains("static") && !mods.Contains("readonly") && !mods.Contains("const")));
                 bool hidden = attrs.Contains("NonSerialized") || attrs.Contains("HideInInspector");
 
                 Match h = headerRx.Match(attrs);
