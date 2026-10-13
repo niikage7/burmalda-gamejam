@@ -10,6 +10,7 @@ namespace TankBrawl.Weapons
         public string displayName = "ПРОСТОЙ";
 
         [Header("Projectile")]
+        [Tooltip("Prefab spawned for every shot. Its sprite gives the projectile type its silhouette.")]
         public Projectile projectilePrefab;
 
         [Tooltip("Flight speed, units/s. Balance v0.2 armor-piercing: 10")]

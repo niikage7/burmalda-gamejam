@@ -1,0 +1,16 @@
+- name: Что за игра
+  href: overview.md
+- name: Управление
+  href: controls.md
+- name: Правила боя
+  href: rules.md
+- name: Как проходит матч
+  href: match.md
+- name: Что уже готово
+  href: progress.md
+- name: Плейтест
+  href: playtest.md
+- name: Как настраивать игру
+  href: tuning.md
+- name: Словарь терминов
+  href: glossary.md

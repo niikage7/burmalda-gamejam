@@ -14,6 +14,7 @@ namespace TankBrawl.Map
             tilemap = GetComponent<Tilemap>();
         }
 
+        /// <summary>True when there is a bush tile in the cell under <paramref name="worldPosition"/>.</summary>
         public bool Covers(Vector2 worldPosition)
         {
             return tilemap.HasTile(tilemap.WorldToCell(worldPosition));

@@ -26,7 +26,11 @@ namespace TankBrawl.Tank
         float knockbackLeft;
 
         public TankConfig Config => config;
+
+        /// <summary>Current driving speed along the hull, units/s. Does not include a knockback.</summary>
         public float CurrentSpeed => currentSpeed;
+
+        /// <summary>Unit vector the hull (and so the gun) faces, in world space.</summary>
         public Vector2 Forward => AngleToDirection(body.rotation);
 
         /// <summary>Top speed without nitro and without the speed multiplier: the config speed plus the engine upgrades, units/s.</summary>
@@ -74,6 +78,7 @@ namespace TankBrawl.Tank
             // The dead zone comes from Input System settings (Default Deadzone Min), so any non-zero value is intentional.
             if (move.sqrMagnitude > 0f)
             {
+                // -90: Atan2 measures from +X, the sprite faces +Y.
                 float targetAngle = Mathf.Atan2(move.y, move.x) * Mathf.Rad2Deg - 90f;
                 angle = Mathf.MoveTowardsAngle(angle, targetAngle, config.rotationSpeed * TurnRateScale * dt);
 
@@ -106,6 +111,7 @@ namespace TankBrawl.Tank
             SpeedMultiplier = 1f;
         }
 
+        // Rotation 0 faces +Y, positive angles turn counter-clockwise.
         static Vector2 AngleToDirection(float angleDeg)
         {
             float rad = angleDeg * Mathf.Deg2Rad;

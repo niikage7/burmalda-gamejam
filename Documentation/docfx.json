@@ -1,0 +1,40 @@
+{
+  "$schema": "https://raw.githubusercontent.com/dotnet/docfx/main/schemas/docfx.schema.json",
+  "metadata": [
+    {
+      "src": [
+        {
+          "src": "../Assets/_Project/Scripts",
+          "files": ["**/*.cs"]
+        }
+      ],
+      "dest": "api",
+      "includePrivateMembers": false,
+      "namespaceLayout": "flattened",
+      "memberLayout": "samePage",
+      "enumSortOrder": "declaringOrder",
+      "allowCompilationErrors": true
+    }
+  ],
+  "build": {
+    "content": [
+      { "files": ["**/*.{md,yml}"], "exclude": ["_site/**", "obj/**", "namespaces/**", "tools/**"] }
+    ],
+    "resource": [
+      { "files": ["images/**"] }
+    ],
+    "overwrite": [
+      { "files": ["namespaces/**.md", "obj/overwrite/**.md"] }
+    ],
+    "output": "_site",
+    "template": ["default", "modern"],
+    "globalMetadata": {
+      "_appName": "Tank Brawl",
+      "_appTitle": "Tank Brawl",
+      "_appFooter": "Tank Brawl — хакатон FunFlow",
+      "_enableSearch": true,
+      "_disableContribution": true,
+      "pdf": false
+    }
+  }
+}

@@ -15,6 +15,7 @@ namespace TankBrawl.UI
     /// </summary>
     public class SceneNavigator : MonoBehaviour
     {
+        /// <summary>Name of the menu scene; it must be in Build Settings.</summary>
         public const string MenuSceneName = "Menu";
 
         /// <summary>Outside a match and the menu, a second back press within this many seconds leaves to the menu.</summary>

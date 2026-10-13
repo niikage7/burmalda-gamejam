@@ -1,0 +1,50 @@
+# Собирает сайт документации (Documentation/) и публикует его на GitHub Pages.
+# Запускается при пуше в dev, если менялся код или документация, и вручную (Actions → Docs → Run workflow).
+name: Docs
+
+on:
+  push:
+    branches: [dev]
+    paths:
+      - "Assets/_Project/Scripts/**"
+      - "Documentation/**"
+      - "dotnet-tools.json"
+      - ".github/workflows/docs.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Новый запуск отменяет ещё не начатую публикацию, но не обрывает идущую.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Build site
+        run: ./Documentation/build.sh
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: Documentation/_site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

@@ -194,6 +194,7 @@ namespace TankBrawl.Weapons
                 }
             }
 
+            // Whatever is hit first wins; on a tie: projectile, then unit, then terrain.
             float nearest = Mathf.Min(unitDistance, terrainDistance, projectileDistance);
             if (nearest == float.MaxValue)
             {

@@ -14,6 +14,7 @@ namespace TankBrawl.AI
         [Tooltip("Delay between first seeing the target and the first shot, s (random in the range).")]
         [Min(0f)] public float reactionDelayMin = 0.2f;
 
+        [Tooltip("Upper bound of the reaction delay, s. Kept not below the minimum.")]
         [Min(0f)] public float reactionDelayMax = 0.4f;
 
         [Tooltip("The bot aims off by a random angle within ± this value, deg. Re-rolled after every shot. Balance v0.2: 8")]

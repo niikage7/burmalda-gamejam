@@ -1,0 +1,9 @@
+- name: Об игре
+  href: game/
+  homepage: game/overview.md
+- name: Для разработчиков
+  href: articles/
+  homepage: articles/architecture.md
+- name: API
+  href: api/
+  homepage: api/TankBrawl.Core.yml

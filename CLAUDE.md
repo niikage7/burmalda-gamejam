@@ -239,6 +239,7 @@
 - Танк: `Rigidbody2D` + `CircleCollider2D` (круглый, чтобы обтекал углы). Движение в `FixedUpdate`.
 - Сцены: главная арена `Scenes/Arena.unity` (один владелец), карты из генератора `Scenes/Maps/<Id>.unity` (правка раскладки — в `Editor/MapLayouts`, затем пересборка), песочницы `Scenes/Sandbox/<Область>.unity` для тестов своей части.
 - Меню: `Scenes/Menu.unity` (индекс 0 в Build Settings), экраны строит `MenuScreens` (см. этап 9); тестовые сцены лежат в «Настройки → Отладка» (список `debugScenes` компонента `MenuScreens`, сцена должна быть в Build Settings, иначе кнопка выключена). `SceneNavigator` создаёт себя сам: Escape / кнопка «Назад» на Android в матче ставит паузу, в меню идёт на экран назад (на главном закрывает приложение), в остальных сценах возвращает в меню. Текст UI — обычный `UnityEngine.UI.Text` (TextMeshPro не импортирован).
+- **Документация:** сайт DocFX в `Documentation/` (сборка `./Documentation/build.sh --serve`, правила — `Documentation/articles/writing-docs.md`, публикация на GitHub Pages при пуше в `dev`). Новый класс — `/// <summary>`; публичный член — `<summary>`, если имя не объясняет единиц и поведения; реализация интерфейса — `<inheritdoc/>`; поле инспектора — только `[Tooltip]` (попадает в таблицу «Параметры в инспекторе»); внутри методов `//` только на «почему». При изменении поведения поправить статью в `Documentation/articles` (и `Documentation/game`, если это видно игроку).
 - Небольшие компоненты с одной обязанностью. Синглтоны — только для `GameManager`/`AudioManager`.
 
 ## Особенности Unity 6 / 6.6 (частые ошибки)

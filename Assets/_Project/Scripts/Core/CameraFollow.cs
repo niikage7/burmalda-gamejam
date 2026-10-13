@@ -20,6 +20,7 @@ namespace TankBrawl.Core
         Vector3 basePosition;
         float cameraZ;
 
+        /// <summary>What the camera follows. Can be swapped at runtime (e.g. after respawn); null stops the camera.</summary>
         public Transform Target
         {
             get => target;
