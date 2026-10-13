@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using TankBrawl.Audio;
 using TankBrawl.Core;
 using TankBrawl.Map;
 using UnityEngine;
@@ -26,6 +27,9 @@ namespace TankBrawl.Weapons
         // Push-off after a bounce, so the next cast does not start inside the wall.
         const float BounceSkin = 0.01f;
 
+        static readonly Color SparkColor = new Color(1f, 0.85f, 0.5f, 1f);
+        static readonly Color ClashColor = new Color(1f, 1f, 1f, 1f);
+
         // Scratch buffers, overwritten before every use: nothing to reset between Play Mode runs.
         static readonly RaycastHit2D[] UnitHits = new RaycastHit2D[MaxHits];
         static readonly RaycastHit2D[] TerrainHits = new RaycastHit2D[MaxHits];
@@ -40,15 +44,45 @@ namespace TankBrawl.Weapons
         WeaponConfig config;
         GameObject owner;
         Team team;
+        float speed;
+        float damage;
+        float blastDamage;
         Vector2 direction;
         int bounces;
         bool finished;
+
+        /// <summary>Every projectile in flight. Read-only, for bots dodging shots (index loop, no allocations).</summary>
+        public static IReadOnlyList<Projectile> InFlight => Active;
+
+        public Team Team => team;
+        public Vector2 Direction => direction;
+        public WeaponConfig Config => config;
+        public bool IsFinished => finished;
+
+        /// <summary>Flight speed of this projectile, units/s (the config speed plus the shooter's weapon upgrades).</summary>
+        public float Speed => speed;
+
+        /// <summary>The tank that fired it (its root object). After the first bounce the projectile can hit it too.</summary>
+        public GameObject Owner => owner;
+
+        /// <summary>Bounces off steel so far.</summary>
+        public int Bounces => bounces;
+
+        /// <summary>Bounces still possible: the wall after the last one destroys the projectile.</summary>
+        public int BouncesLeft => config != null ? Mathf.Max(0, config.maxBounces - bounces) : 0;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         static void ResetStatics()
         {
             Active.Clear();
             solidFilterReady = false;
+        }
+
+        /// <summary>Removes every projectile in flight without exploding it (a new round starts).</summary>
+        public static void ClearAll()
+        {
+            for (int i = Active.Count - 1; i >= 0; i--)
+                Active[i].Finish();
         }
 
         void OnEnable()
@@ -74,11 +108,14 @@ namespace TankBrawl.Weapons
         /// Starts the flight at <paramref name="origin"/> (the shooter's centre) and immediately sweeps to the muzzle,
         /// so a shot fired point-blank at a wall or a tank still hits it.
         /// </summary>
-        public void Launch(WeaponConfig weaponConfig, GameObject shooter, Team shooterTeam, Vector2 origin, Vector2 shotDirection)
+        public void Launch(WeaponConfig weaponConfig, GameObject shooter, Team shooterTeam, Vector2 origin, Vector2 shotDirection, int weaponLevel = 0)
         {
             config = weaponConfig;
             owner = shooter;
             team = shooterTeam;
+            speed = config.SpeedAt(weaponLevel);
+            damage = config.DamageAt(weaponLevel);
+            blastDamage = config.ExplosionDamageAt(weaponLevel);
             direction = shotDirection.normalized;
             bounces = 0;
             transform.position = origin;
@@ -92,7 +129,7 @@ namespace TankBrawl.Weapons
             if (finished || config == null)
                 return;
 
-            Advance(config.speed * Time.deltaTime);
+            Advance(speed * Time.deltaTime);
         }
 
         void Advance(float distance)
@@ -169,14 +206,21 @@ namespace TankBrawl.Weapons
 
             if (projectileDistance <= unitDistance && projectileDistance <= terrainDistance)
             {
+                // Two shells cancel each other, but an explosive one still goes off at the contact point.
+                AudioManager.PlayAt(Sfx.ShellClash, transform.position);
+                Fx.Sparks(transform.position, -direction, ClashColor);
+                Fx.Sparks(transform.position, direction, ClashColor);
+                otherProjectile.Explode(transform.position, null);
                 otherProjectile.Finish();
+                Explode(transform.position, null);
                 Finish();
                 return 0f;
             }
 
             if (unitDistance <= terrainDistance)
             {
-                unitTarget.TakeDamage(new DamageInfo(config.damage, config.blockDamage, unitHit.point, direction, owner));
+                unitTarget.TakeDamage(new DamageInfo(damage, config.blockDamage, unitHit.point, direction, owner));
+                Explode(transform.position, unitTarget);
                 Finish();
                 return 0f;
             }
@@ -186,6 +230,8 @@ namespace TankBrawl.Weapons
                              && terrainHit.collider.GetComponentInParent<RicochetSurface>() != null;
             if (canBounce)
             {
+                AudioManager.PlayAt(Sfx.Ricochet, terrainHit.point);
+                Fx.Sparks(terrainHit.point, terrainHit.normal, SparkColor);
                 direction = Vector2.Reflect(direction, terrainHit.normal);
                 bounces++;
                 transform.position += (Vector3)(terrainHit.normal * BounceSkin);
@@ -193,16 +239,28 @@ namespace TankBrawl.Weapons
                 return distance - terrainDistance;
             }
 
+            // A brick plays its own sound when it breaks; any other wall (steel without a bounce left, the border) clangs.
             IDamageable terrainTarget = terrainHit.collider.GetComponentInParent<IDamageable>();
+            if (terrainTarget == null)
+                AudioManager.PlayAt(Sfx.HitWall, terrainHit.point);
+            Fx.Sparks(terrainHit.point, terrainHit.normal, SparkColor);
+
             if (terrainTarget != null)
             {
                 Vector2 inward = terrainHit.normal.sqrMagnitude > 0f ? -terrainHit.normal : direction;
                 Vector2 point = terrainHit.point + inward * SurfacePenetration;
-                terrainTarget.TakeDamage(new DamageInfo(config.damage, config.blockDamage, point, direction, owner));
+                terrainTarget.TakeDamage(new DamageInfo(damage, config.blockDamage, point, direction, owner));
             }
 
+            Explode(transform.position, null);
             Finish();
             return 0f;
+        }
+
+        // Does nothing for a plain projectile; must be called before Finish() (it needs the config and the team).
+        void Explode(Vector2 point, IDamageable directTarget)
+        {
+            Explosion.Detonate(config, blastDamage, point, owner, team, directTarget);
         }
 
         static bool TryGetUnit(Collider2D hitCollider, out IDamageable unit)

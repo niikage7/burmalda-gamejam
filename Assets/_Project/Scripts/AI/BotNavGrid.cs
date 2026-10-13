@@ -7,9 +7,9 @@ namespace TankBrawl.AI
 {
     /// <summary>
     /// Navigation for bots: A* over the tile map plus path smoothing.
-    /// A tank is 2×2 cells, so the graph nodes are cell corners (vertices): a node is free when all four cells
-    /// around it are free, and a node is where the tank's centre can stand. This also lets a tank through
-    /// corridors exactly two cells wide.
+    /// A tank is one cell wide (collider diameter 0.9 in a 1-unit cell), so the graph nodes are cell centres:
+    /// a node is free when its cell is free, and a node is where the tank's centre can stand. This also lets a tank
+    /// through corridors one cell wide.
     /// Solid maps (border, steel, water) always block; brick maps block only where a brick stands now.
     /// <see cref="Version"/> grows whenever a brick appears or disappears, so bots know their paths are stale.
     /// Assumes all tilemaps share one Grid and have no offset.
@@ -23,6 +23,7 @@ namespace TankBrawl.AI
         }
 
         const float DiagonalCost = 1.41421356f;
+        const int RandomPointAttempts = 30;
 
         static readonly int[] StepX = { 1, -1, 0, 0, 1, 1, -1, -1 };
         static readonly int[] StepY = { 0, 0, 1, -1, 1, -1, 1, -1 };
@@ -48,7 +49,6 @@ namespace TankBrawl.AI
         bool built;
         int originX, originY;
         int cellsW, cellsH;
-        int nodesW, nodesH;
         Vector2 worldOrigin;
         Vector2 cellSize;
         bool[] solidCells;
@@ -118,8 +118,8 @@ namespace TankBrawl.AI
                 }
 
                 closedStamp[node] = stamp;
-                int nx = node % nodesW;
-                int ny = node / nodesW;
+                int nx = node % cellsW;
+                int ny = node / cellsW;
 
                 for (int d = 0; d < StepX.Length; d++)
                 {
@@ -132,7 +132,7 @@ namespace TankBrawl.AI
                     if (closedStamp[next] == stamp)
                         continue;
 
-                    // A diagonal move sweeps the tank over the corner cells too: both side nodes must be free.
+                    // A diagonal move sweeps the tank past the corner cells too: both side cells must be free.
                     bool diagonal = d >= 4;
                     if (diagonal && (!IsNodeFree(nx + StepX[d], ny) || !IsNodeFree(nx, ny + StepY[d])))
                         continue;
@@ -156,7 +156,7 @@ namespace TankBrawl.AI
                 return false;
 
             for (int node = goal; node != start; node = parent[node])
-                result.Add(NodeWorld(node % nodesW, node / nodesW));
+                result.Add(NodeWorld(node % cellsW, node / cellsW));
             result.Reverse();
 
             Smooth(from, result);
@@ -178,6 +178,66 @@ namespace TankBrawl.AI
             }
 
             return true;
+        }
+
+        /// <summary>
+        /// A random free cell centre whose distance from <paramref name="from"/> lies in [minDistance, maxDistance].
+        /// Tries a limited number of cells, so it can fail on a small map. Does not check that the point is reachable.
+        /// </summary>
+        public bool TryGetRandomPoint(Vector2 from, float minDistance, float maxDistance, out Vector2 point)
+        {
+            point = default;
+            if (!EnsureBuilt())
+                return false;
+
+            float minSqr = minDistance * minDistance;
+            float maxSqr = maxDistance * maxDistance;
+            for (int attempt = 0; attempt < RandomPointAttempts; attempt++)
+            {
+                int vx = UnityEngine.Random.Range(0, cellsW);
+                int vy = UnityEngine.Random.Range(0, cellsH);
+                if (!IsNodeFree(vx, vy))
+                    continue;
+
+                Vector2 candidate = NodeWorld(vx, vy);
+                float sqr = (candidate - from).sqrMagnitude;
+                if (sqr < minSqr || sqr > maxSqr)
+                    continue;
+
+                point = candidate;
+                return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// A random free cell centre inside the ring [minRadius, maxRadius] around <paramref name="center"/>, sampled in the ring
+        /// itself (so it works for a small zone on a big map). Does not check that the point is reachable.
+        /// </summary>
+        public bool TryGetPointAround(Vector2 center, float minRadius, float maxRadius, out Vector2 point)
+        {
+            point = default;
+            if (!EnsureBuilt())
+                return false;
+
+            for (int attempt = 0; attempt < RandomPointAttempts; attempt++)
+            {
+                float angle = UnityEngine.Random.value * Mathf.PI * 2f;
+                float distance = Mathf.Sqrt(UnityEngine.Random.Range(minRadius * minRadius, maxRadius * maxRadius));
+                Vector2 sample = center + new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * distance;
+
+                Vector2 local = sample - worldOrigin;
+                int vx = Mathf.FloorToInt(local.x / cellSize.x);
+                int vy = Mathf.FloorToInt(local.y / cellSize.y);
+                if (!IsNodeFree(vx, vy))
+                    continue;
+
+                point = NodeWorld(vx, vy);
+                return true;
+            }
+
+            return false;
         }
 
         bool EnsureBuilt()
@@ -207,8 +267,6 @@ namespace TankBrawl.AI
             originY = minY;
             cellsW = maxX - minX;
             cellsH = maxY - minY;
-            nodesW = cellsW + 1;
-            nodesH = cellsH + 1;
             worldOrigin = grid.CellToWorld(new Vector3Int(originX, originY, 0));
 
             solidCells = new bool[cellsW * cellsH];
@@ -216,7 +274,7 @@ namespace TankBrawl.AI
             FillCells(solidMaps, solidCells);
             FillCells(brickMaps, brickCells);
 
-            int nodeCount = nodesW * nodesH;
+            int nodeCount = cellsW * cellsH;
             gScore = new float[nodeCount];
             parent = new int[nodeCount];
             openStamp = new int[nodeCount];
@@ -321,19 +379,18 @@ namespace TankBrawl.AI
             return solidCells[index] || brickCells[index];
         }
 
-        // Node (vx, vy) is the lower-left corner of cell (vx, vy): the tank covers the four cells around it.
+        // Node (vx, vy) is the centre of cell (vx, vy).
         bool IsNodeFree(int vx, int vy)
         {
-            return !IsCellBlocked(vx - 1, vy - 1) && !IsCellBlocked(vx, vy - 1)
-                   && !IsCellBlocked(vx - 1, vy) && !IsCellBlocked(vx, vy);
+            return !IsCellBlocked(vx, vy);
         }
 
         // A wall within one cell of the tank's 2×2 footprint around node (vx, vy).
         bool IsNearWall(int vx, int vy)
         {
-            for (int y = vy - 2; y <= vy + 1; y++)
+            for (int y = vy - 1; y <= vy + 1; y++)
             {
-                for (int x = vx - 2; x <= vx + 1; x++)
+                for (int x = vx - 1; x <= vx + 1; x++)
                 {
                     if (IsCellBlocked(x, y))
                         return true;
@@ -345,20 +402,20 @@ namespace TankBrawl.AI
 
         int NodeId(int vx, int vy)
         {
-            return vx + vy * nodesW;
+            return vx + vy * cellsW;
         }
 
         Vector2 NodeWorld(int vx, int vy)
         {
-            return worldOrigin + new Vector2(vx * cellSize.x, vy * cellSize.y);
+            return worldOrigin + new Vector2((vx + 0.5f) * cellSize.x, (vy + 0.5f) * cellSize.y);
         }
 
         // Nearest free node to a world point, searching outwards ring by ring.
         bool TryGetNode(Vector2 point, out int vx, out int vy)
         {
             Vector2 local = point - worldOrigin;
-            int centerX = Mathf.RoundToInt(local.x / cellSize.x);
-            int centerY = Mathf.RoundToInt(local.y / cellSize.y);
+            int centerX = Mathf.FloorToInt(local.x / cellSize.x);
+            int centerY = Mathf.FloorToInt(local.y / cellSize.y);
 
             vx = vy = 0;
             for (int ring = 0; ring <= snapRadius; ring++)

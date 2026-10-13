@@ -5,7 +5,7 @@ using UnityEngine.Tilemaps;
 namespace TankBrawl.Map
 {
     /// <summary>
-    /// Unity 6.6 does not build the shapes of a <see cref="TilemapCollider2D"/> when a scene loads: the composite
+    /// Unity 6.6 does not build the shapes of a <c>TilemapCollider2D</c> when a scene loads: the composite
     /// collider stays empty, so tanks and projectiles pass through walls. Switching the collider off and on builds it.
     /// Done once for every loaded scene, so no scene needs a component for this.
     /// </summary>

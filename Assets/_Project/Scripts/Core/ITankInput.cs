@@ -11,10 +11,11 @@ namespace TankBrawl.Core
         /// <summary>Desired hull direction. Magnitude 0..1, dead zone already applied.</summary>
         Vector2 Move { get; }
 
-        /// <summary>The fire button is held. The weapon keeps firing at its own fire rate while it is true.</summary>
         bool FireHeld { get; }
 
-        /// <summary>The nitro button is held. See <c>TankNitro</c> for when it actually boosts.</summary>
+        /// <summary>True only on the frame the fire button went down, even for a tap shorter than a frame. Read it in Update.</summary>
+        bool FirePressed { get; }
+
         bool NitroHeld { get; }
 
         /// <summary>True only on the frame the ammo switch was requested. Read it in Update.</summary>

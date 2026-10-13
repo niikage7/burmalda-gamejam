@@ -1,0 +1,33 @@
+# name: Лабиринт
+# id: Maze
+# zone: 3
+# Map layout for TankBrawl / Maps / Build New Maps. One character = one 1x1 cell, the first row is the top (north).
+# The generator adds a 2-cell border around it. Keep the map 180-degree symmetric so both bases are equal.
+#   .  ground          #  steel (bounces shots)   x  brick (breaks, grows back)
+#   ~  water (shots fly over)                     %  bushes (hide tanks)
+#   1  blue base spawn (3)   2  red base spawn (3)   f  free-for-all spawn (8+)
+#   p  power-up spawn point  n  nitro charging point
+#   Z  capture zone centre (1-4 cells, the zone sits at their average)
+# Markers stand on ground. Header keys: name (shown in the menu), id (scene name), zone (radius, units).
+f.....................
+.%%......x...p..f.2.2.
+.%%xxxx..x%%....x.....
+...x.....x%%xxxxx...2.
+..px.%%..x......#.....
+...x.%%.f.......#.n...
+..........p...........
+.......#xx..xx#...##..
+.xxxx..x......x...f#..
+.%%.x..x......x....xx.
+.%%.x.....ZZ...p......
+......p...ZZ.....x.%%.
+.xx....x......x..x.%%.
+..#f...x......x..xxxx.
+..##...#xx..xx#.......
+...........p..........
+...n.#.......f.%%.x...
+.....#......x..%%.xp..
+.1...xxxxx%%x.....x...
+.....x....%%x..xxxx%%.
+.1.1.f..p...x......%%.
+.....................f

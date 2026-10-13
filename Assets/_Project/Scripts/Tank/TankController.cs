@@ -16,6 +16,7 @@ namespace TankBrawl.Tank
         Rigidbody2D body;
         ITankInput input;
         TankNitro nitro;
+        TankStats stats;
         float currentSpeed;
 
         // A shove from outside (a ram). This script overwrites linearVelocity every step, so a shove
@@ -31,6 +32,12 @@ namespace TankBrawl.Tank
 
         /// <summary>Unit vector the hull (and so the gun) faces, in world space.</summary>
         public Vector2 Forward => AngleToDirection(body.rotation);
+
+        /// <summary>Top speed without nitro and without the speed multiplier: the config speed plus the engine upgrades, units/s.</summary>
+        public float BaseSpeed => config.moveSpeed + (stats != null ? config.speedPerLevel * stats.EngineLevel : 0f);
+
+        /// <summary>Scales the drive speed, nitro included (the laser power-up slows the tank). 1 = normal.</summary>
+        public float SpeedMultiplier { get; set; } = 1f;
 
         /// <summary>The input asked for driving in the last physics step (not just turning in place).</summary>
         public bool IsDriving { get; private set; }
@@ -48,6 +55,7 @@ namespace TankBrawl.Tank
             body = GetComponent<Rigidbody2D>();
             input = GetComponent<ITankInput>();
             TryGetComponent(out nitro);
+            TryGetComponent(out stats);
             if (input == null)
                 Debug.LogError($"{name}: no ITankInput component, the tank will not move.", this);
             if (config == null)
@@ -73,7 +81,7 @@ namespace TankBrawl.Tank
 
                 bool aligned = Mathf.Abs(Mathf.DeltaAngle(angle, targetAngle)) <= config.maxDriveAngle;
                 if (aligned && move.magnitude >= config.driveThreshold)
-                    targetSpeed = nitro != null && nitro.IsActive ? nitro.Speed : config.moveSpeed;
+                    targetSpeed = (nitro != null && nitro.IsActive ? nitro.Speed : BaseSpeed) * SpeedMultiplier;
             }
 
             IsDriving = targetSpeed > 0f;
@@ -96,6 +104,8 @@ namespace TankBrawl.Tank
         void OnDisable()
         {
             knockbackLeft = 0f;
+            currentSpeed = 0f;
+            SpeedMultiplier = 1f;
         }
 
         // Rotation 0 faces +Y, positive angles turn counter-clockwise.

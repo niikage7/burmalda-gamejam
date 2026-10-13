@@ -14,6 +14,9 @@ namespace TankBrawl.Tank
         [Tooltip("Seconds of continuous boost in a full tank. Balance v0.2: 3")]
         [Min(0.1f)] public float capacity = 3f;
 
+        [Tooltip("Added to the capacity per nitro upgrade level, s. Balance v0.2: 0.25")]
+        [Min(0f)] public float capacityPerLevel = 0.25f;
+
         [Tooltip("Top speed on nitro, units/s. Balance v0.2: 5.0")]
         [Min(0f)] public float speed = 5f;
 
@@ -22,6 +25,9 @@ namespace TankBrawl.Tank
 
         [Tooltip("After the stock hits zero, nitro stays off until this fraction of the stock has refilled (anti-flicker). Not in balance, proposal: 0.1")]
         [Range(0f, 1f)] public float reactivateStock = 0.1f;
+
+        [Tooltip("The stock drains only while the tank actually moves at least this fast, units/s, so pushing against a wall burns nothing. Proposal: 1")]
+        [Min(0f)] public float minDrainSpeed = 1f;
 
         [Header("Ram (CLAUDE.md, 'Решённое'; proposals, not in balance yet)")]
         [Tooltip("The ram works only while nitro is on and the tank is at least this fast, units/s. Between the normal (2.8) and the nitro (5.0) speed.")]
