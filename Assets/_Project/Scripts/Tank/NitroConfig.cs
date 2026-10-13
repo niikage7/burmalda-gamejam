@@ -14,6 +14,9 @@ namespace TankBrawl.Tank
         [Tooltip("Seconds of continuous boost in a full tank. Balance v0.2: 3")]
         [Min(0.1f)] public float capacity = 3f;
 
+        [Tooltip("Added to the capacity per nitro upgrade level, s. Balance v0.2: 0.25")]
+        [Min(0f)] public float capacityPerLevel = 0.25f;
+
         [Tooltip("Top speed on nitro, units/s. Balance v0.2: 5.0")]
         [Min(0f)] public float speed = 5f;
 

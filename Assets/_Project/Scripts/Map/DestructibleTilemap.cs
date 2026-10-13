@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using TankBrawl.Audio;
 using TankBrawl.Core;
 using UnityEngine;
 using UnityEngine.Tilemaps;
@@ -52,6 +53,9 @@ namespace TankBrawl.Map
 
         [Tooltip("Layers whose colliders keep a brick from coming back (tanks).")]
         [SerializeField] LayerMask blockers;
+
+        [Tooltip("Colour of the debris particles when a brick breaks.")]
+        [SerializeField] Color brickDebrisColor = new Color(0.72f, 0.42f, 0.28f, 1f);
 
         readonly Dictionary<Vector3Int, int> damageTaken = new Dictionary<Vector3Int, int>();
         readonly List<PendingBrick> pending = new List<PendingBrick>();
@@ -151,6 +155,10 @@ namespace TankBrawl.Map
                 if (warningTilemap != null)
                     warningTilemap.SetTile(cell, rubbleTile);
                 pending.Add(new PendingBrick { Cell = cell, RestoreAt = Time.time + restoreDelay });
+
+                Vector3 centre = tilemap.GetCellCenterWorld(cell);
+                AudioManager.PlayAt(Sfx.BrickBreak, centre);
+                Fx.Debris(centre, brickDebrisColor);
                 return true;
             }
 
@@ -192,6 +200,25 @@ namespace TankBrawl.Map
                 warningTilemap.SetTile(cell, null);
 
             tilemap.SetTile(cell, brickTile);
+            RebuildCollider();
+            AudioManager.PlayAt(Sfx.BrickRestore, tilemap.GetCellCenterWorld(cell));
+        }
+
+        /// <summary>Puts every brick back at full durability at once (a new round starts). Call before the tanks are placed.</summary>
+        public void ResetAll()
+        {
+            foreach (Vector3Int cell in damageTaken.Keys)
+                tilemap.SetTile(cell, brickTile);
+            damageTaken.Clear();
+
+            for (int i = 0; i < pending.Count; i++)
+            {
+                if (warningTilemap != null)
+                    warningTilemap.SetTile(pending[i].Cell, null);
+                tilemap.SetTile(pending[i].Cell, brickTile);
+            }
+
+            pending.Clear();
             RebuildCollider();
         }
 

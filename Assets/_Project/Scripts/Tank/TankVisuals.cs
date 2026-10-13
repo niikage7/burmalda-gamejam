@@ -88,6 +88,16 @@ namespace TankBrawl.Tank
             ShowTrackFrames();
         }
 
+        /// <summary>Switches to another skin (the deathmatch gives every tank its own colour).</summary>
+        public void SetSkin(TankSkin newSkin)
+        {
+            if (newSkin == null || newSkin == skin)
+                return;
+
+            skin = newSkin;
+            ApplySkin();
+        }
+
         /// <summary>Puts the skin's sprites on the part renderers. Also available from the component's context menu.</summary>
         [ContextMenu("Apply Skin")]
         public void ApplySkin()

@@ -1,3 +1,4 @@
+using TankBrawl.Audio;
 using TankBrawl.Core;
 using UnityEngine;
 
@@ -6,52 +7,58 @@ namespace TankBrawl.Match
     /// <summary>
     /// Mode 1: team against team, no respawns inside a round. A round ends when at most one team has living tanks;
     /// that team gets the point (nobody left = a draw, no point). The match goes to <see cref="MatchModeConfig.roundsToWin"/>
-    /// round wins, then a new match starts after a pause. Texts are Russian, they are what the HUD shows.
+    /// round wins. Texts are Russian, they are what the HUD shows. Extra goal: the human never died in the match.
     /// </summary>
-    public sealed class EliminationMode : IMatchMode
+    public sealed class EliminationMode : MatchModeBase
     {
         enum Phase
         {
             Intro,
             Playing,
-            RoundEnd,
-            MatchEnd
+            RoundEnd
         }
 
-        readonly MatchModeConfig config;
         readonly int[] scores = new int[4];
 
-        MatchManager match;
+        ScoreEntry ours;
+        ScoreEntry theirs;
+        Team ourTeam;
+        Team theirTeam;
         Phase phase;
         float phaseEndsAt;
         int round;
         bool checkRound;
-        int countdownShown;
-        string roundResult;
-        string scoreText = string.Empty;
-        string bannerText = string.Empty;
 
-        public EliminationMode(MatchModeConfig config)
+        public EliminationMode(MatchModeConfig config) : base(config)
         {
-            this.config = config;
         }
 
-        public string ScoreText => scoreText;
-        public string BannerText => bannerText;
-
-        public void Begin(MatchManager manager)
+        public override void Begin(MatchManager manager)
         {
             match = manager;
-            StartMatch();
+            ourTeam = TeamMember.LocalTeam;
+            theirTeam = ourTeam;
+            for (int i = 0; i < match.Teams.Count; i++)
+            {
+                if (match.Teams[i] != ourTeam)
+                {
+                    theirTeam = match.Teams[i];
+                    break;
+                }
+            }
+
+            ours = AddEntry(ourTeam, "МЫ", true);
+            theirs = AddEntry(theirTeam, "ВРАГ", false);
+            StartRound();
         }
 
-        public void OnDied(MatchParticipant victim, MatchParticipant killer)
+        public override void OnDied(MatchParticipant victim, MatchParticipant killer)
         {
             checkRound = true;
-            RebuildScore();
+            RefreshEntries();
         }
 
-        public void Tick()
+        public override void Tick()
         {
             switch (phase)
             {
@@ -61,7 +68,7 @@ namespace TankBrawl.Match
                     if (phase == Phase.Intro && Time.time >= phaseEndsAt)
                     {
                         phase = Phase.Playing;
-                        bannerText = string.Empty;
+                        SetBanner(string.Empty);
                     }
 
                     break;
@@ -75,21 +82,7 @@ namespace TankBrawl.Match
                     if (Time.time >= phaseEndsAt)
                         StartRound();
                     break;
-
-                case Phase.MatchEnd:
-                    if (Time.time >= phaseEndsAt)
-                        StartMatch();
-                    else
-                        UpdateMatchEndCountdown();
-                    break;
             }
-        }
-
-        void StartMatch()
-        {
-            System.Array.Clear(scores, 0, scores.Length);
-            round = 0;
-            StartRound();
         }
 
         void StartRound()
@@ -100,8 +93,10 @@ namespace TankBrawl.Match
 
             phase = Phase.Intro;
             phaseEndsAt = Time.time + config.roundIntroSeconds;
-            bannerText = "РАУНД " + round;
-            RebuildScore();
+            SetBanner("РАУНД " + round);
+            SetTitle("РАУНД " + round + "  ·  до " + config.roundsToWin + " побед");
+            AudioManager.Play(Sfx.RoundStart);
+            RefreshEntries();
         }
 
         // The round is over when fewer than two teams have living tanks.
@@ -124,66 +119,46 @@ namespace TankBrawl.Match
             if (teamsAlive >= 2)
                 return;
 
-            Team local = TeamMember.LocalTeam;
+            string result;
             if (survivor.HasValue)
             {
                 Team winner = survivor.Value;
                 scores[(int)winner]++;
-                bool ours = winner == local;
+                bool weWon = winner == ourTeam;
+                RefreshEntries();
 
                 if (scores[(int)winner] >= config.roundsToWin)
                 {
-                    phase = Phase.MatchEnd;
-                    phaseEndsAt = Time.time + config.matchEndSeconds;
-                    roundResult = ours ? "ПОБЕДА В МАТЧЕ!" : "ПОРАЖЕНИЕ В МАТЧЕ";
-                    countdownShown = -1;
-                    UpdateMatchEndCountdown();
-                    RebuildScore();
+                    match.FinishMatch(new MatchOutcome
+                    {
+                        HumanWon = weWon,
+                        ExtraGoalDone = weWon && match.Human != null && match.Human.Deaths == 0,
+                        Summary = scores[(int)ourTeam] + " : " + scores[(int)theirTeam]
+                    });
+                    SetBanner(weWon ? "ПОБЕДА В МАТЧЕ!" : "ПОРАЖЕНИЕ В МАТЧЕ");
                     return;
                 }
 
-                roundResult = ours ? "РАУНД ВЫИГРАН" : "РАУНД ПРОИГРАН";
+                result = weWon ? "РАУНД ВЫИГРАН" : "РАУНД ПРОИГРАН";
+                AudioManager.Play(weWon ? Sfx.RoundWin : Sfx.RoundLose);
             }
             else
             {
-                roundResult = "НИЧЬЯ";
+                result = "НИЧЬЯ";
             }
 
             phase = Phase.RoundEnd;
             phaseEndsAt = Time.time + config.roundEndSeconds;
-            bannerText = roundResult;
-            RebuildScore();
+            SetBanner(result);
         }
 
-        // The second line changes once a second, so the string is rebuilt only then.
-        void UpdateMatchEndCountdown()
+        void RefreshEntries()
         {
-            int left = Mathf.CeilToInt(phaseEndsAt - Time.time);
-            if (left == countdownShown)
-                return;
-
-            countdownShown = left;
-            bannerText = roundResult + "\nНовый матч через " + left;
-        }
-
-        // "ROUND 2   YOU 1 : 0 ENEMY   (to 3)   alive 3 : 2" for two teams; the local team is on the left.
-        void RebuildScore()
-        {
-            Team local = TeamMember.LocalTeam;
-            Team other = local;
-            for (int i = 0; i < match.Teams.Count; i++)
-            {
-                if (match.Teams[i] != local)
-                {
-                    other = match.Teams[i];
-                    break;
-                }
-            }
-
-            scoreText = "РАУНД " + round
-                        + "     ВЫ " + scores[(int)local] + " : " + scores[(int)other] + " ВРАГ"
-                        + "     до " + config.roundsToWin + " побед"
-                        + "     живы " + match.CountAlive(local) + " : " + match.CountAlive(other);
+            ours.Value = scores[(int)ourTeam].ToString();
+            theirs.Value = scores[(int)theirTeam].ToString();
+            ours.Detail = "живы " + match.CountAlive(ourTeam);
+            theirs.Detail = "живы " + match.CountAlive(theirTeam);
+            BumpScore();
         }
     }
 }

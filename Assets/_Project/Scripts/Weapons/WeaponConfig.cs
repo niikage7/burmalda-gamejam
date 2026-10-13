@@ -41,6 +41,10 @@ namespace TankBrawl.Weapons
         [Tooltip("Optional blast visual, spawned at the explosion point and scaled to the radius.")]
         public ExplosionVisual explosionEffect;
 
+        [Header("Sound")]
+        [Tooltip("Played at the muzzle when this projectile is fired.")]
+        public TankBrawl.Audio.Sfx fireSfx = TankBrawl.Audio.Sfx.ShotArmorPiercing;
+
         [Header("Fire rate")]
         [Tooltip("Cooldown after a shot, s. Balance v0.2: 0.9")]
         [Min(0.05f)] public float fireInterval = 0.9f;
@@ -52,6 +56,28 @@ namespace TankBrawl.Weapons
         [Tooltip("Radius of the hitbox against walls, units. Smaller than the tank one so the shot does not catch corners.")]
         [Min(0.01f)] public float wallHitRadius = 0.12f;
 
+        [Header("Upgrades (per level; level 0 = the numbers above)")]
+        [Tooltip("Added to the direct damage per weapon level. Balance v0.2: armor-piercing 4, fragment 2; bot 0.5 (rounded)")]
+        [Min(0f)] public float damagePerLevel;
+
+        [Tooltip("Added to the blast damage per weapon level. Balance v0.2: fragment 1")]
+        [Min(0f)] public float explosionDamagePerLevel;
+
+        [Tooltip("Added to the projectile speed per weapon level, units/s. Balance v0.2: bot 0.03, player 0")]
+        [Min(0f)] public float speedPerLevel;
+
+        [Tooltip("Added to the fire rate (shots/s) per fire-rate level. Balance v0.2: player 0.05, bot 0.01")]
+        [Min(0f)] public float fireRatePerLevel;
+
         public bool IsExplosive => explosionRadius > 0f;
+
+        public float DamageAt(int weaponLevel) => Mathf.Round(damage + damagePerLevel * weaponLevel);
+
+        public float ExplosionDamageAt(int weaponLevel) => explosionDamage + explosionDamagePerLevel * weaponLevel;
+
+        public float SpeedAt(int weaponLevel) => speed + speedPerLevel * weaponLevel;
+
+        /// <summary>Time between shots at the given fire-rate level: the rate (1 / interval) grows linearly, so there is no cap.</summary>
+        public float IntervalAt(int fireLevel) => 1f / (1f / fireInterval + fireRatePerLevel * fireLevel);
     }
 }

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using TankBrawl.Audio;
 using TankBrawl.Core;
 using UnityEngine;
 
@@ -85,6 +86,8 @@ namespace TankBrawl.Tank
             nextHitAt[victim] = now + config.ramCooldown;
 
             victim.TakeDamage(new DamageInfo(config.ramDamage, 0, point, direction, gameObject));
+            AudioManager.PlayAt(Sfx.RamHit, point);
+            ScreenShake.AddAt(point, 0.35f);
 
             if (victim.gameObject.activeInHierarchy && victim.TryGetComponent(out TankController victimTank))
                 victimTank.ApplyKnockback(direction * config.knockbackSpeed, config.knockbackDuration);

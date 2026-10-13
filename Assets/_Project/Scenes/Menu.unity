@@ -465,7 +465,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &736285948
 RectTransform:
   m_ObjectHideFlags: 0
@@ -840,41 +840,14 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1260477464}
-  - component: {fileID: 1260477463}
+  - component: {fileID: 1260477465}
   m_Layer: 0
-  m_Name: MainMenu
+  m_Name: MenuScreens
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &1260477463
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1260477462}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9d4516bda79cf404abff5fdab96b626f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::TankBrawl.UI.MainMenu
-  entries:
-  - label: "\u0422\u0430\u043D\u043A: \u0435\u0437\u0434\u0430 \u0438 \u0441\u0442\u0440\u0435\u043B\u044C\u0431\u0430"
-    sceneName: Tank
-  - label: "\u0411\u043E\u0442\u044B: \u043F\u0443\u0442\u044C \u0438 \u0430\u0442\u0430\u043A\u0430"
-    sceneName: Bots
-  - label: "\u041D\u0438\u0442\u0440\u043E \u0438 \u0442\u0430\u0440\u0430\u043D"
-    sceneName: Nitro
-  - label: "\u041F\u0430\u0432\u0435\u0440-\u0430\u043F\u044B"
-    sceneName: PowerUps
-  - label: "\u0422\u043E\u0447\u043A\u0430 3\xD73"
-    sceneName: Point
-  - label: "\u041C\u0430\u0442\u0447 3 \u043D\u0430 3"
-    sceneName: Match
-  buttonTemplate: {fileID: 153421395}
-  container: {fileID: 272859518}
 --- !u!4 &1260477464
 Transform:
   m_ObjectHideFlags: 0
@@ -890,6 +863,34 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1260477465
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1260477462}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6dbc19548263a3146a39fc48f83aad13, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TankBrawl.UI.MenuScreens
+  modes:
+  - {fileID: 11400000, guid: 2b9df5724bd3e3f44a1f7a768b5ca6f7, type: 2}
+  - {fileID: 11400000, guid: 797e4501f558e9542b37881b1d2ddcee, type: 2}
+  - {fileID: 11400000, guid: 17925d5f9ec6ebe42a3b0e133396b089, type: 2}
+  arenaScene: Arena
+  debugScenes:
+  - label: "\u0422\u0430\u043D\u043A: \u0435\u0437\u0434\u0430 \u0438 \u0441\u0442\u0440\u0435\u043B\u044C\u0431\u0430"
+    sceneName: Tank
+  - label: "\u0411\u043E\u0442\u044B: \u043F\u0443\u0442\u044C \u0438 \u0430\u0442\u0430\u043A\u0430"
+    sceneName: Bots
+  - label: "\u041D\u0438\u0442\u0440\u043E \u0438 \u0442\u0430\u0440\u0430\u043D"
+    sceneName: Nitro
+  - label: "\u041F\u0430\u0432\u0435\u0440-\u0430\u043F\u044B"
+    sceneName: PowerUps
+  - label: "\u0422\u043E\u0447\u043A\u0430 3\xD73 (\u0431\u043E\u0442\u044B)"
+    sceneName: Point
 --- !u!114 &1261666244
 MonoBehaviour:
   m_ObjectHideFlags: 0

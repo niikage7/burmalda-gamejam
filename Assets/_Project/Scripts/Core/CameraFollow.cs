@@ -2,7 +2,10 @@ using UnityEngine;
 
 namespace TankBrawl.Core
 {
-    /// <summary>Smoothly follows the target, slightly ahead along its facing so the player sees where they shoot.</summary>
+    /// <summary>
+    /// Smoothly follows the target, slightly ahead along its facing so the player sees where they shoot.
+    /// Adds <see cref="ScreenShake"/> on top without feeding it back into the smoothing.
+    /// </summary>
     public class CameraFollow : MonoBehaviour
     {
         [SerializeField] Transform target;
@@ -14,6 +17,8 @@ namespace TankBrawl.Core
         [SerializeField, Min(0f)] float lookAhead = 1f;
 
         Vector3 velocity;
+        Vector3 basePosition;
+        bool hasBase;
 
         public Transform Target
         {
@@ -23,22 +28,44 @@ namespace TankBrawl.Core
 
         void Start()
         {
+            basePosition = transform.position;
+            hasBase = true;
             if (target != null)
-                transform.position = DesiredPosition();
+                basePosition = DesiredPosition();
+            transform.position = basePosition;
         }
 
-        void LateUpdate()
+        /// <summary>Puts the camera on the target at once, without the smoothing (a new round starts).</summary>
+        public void Snap()
         {
             if (target == null)
                 return;
 
-            transform.position = Vector3.SmoothDamp(transform.position, DesiredPosition(), ref velocity, smoothTime);
+            basePosition = DesiredPosition();
+            velocity = Vector3.zero;
+            hasBase = true;
+            transform.position = basePosition;
+        }
+
+        void LateUpdate()
+        {
+            if (!hasBase)
+            {
+                basePosition = transform.position;
+                hasBase = true;
+            }
+
+            if (target != null)
+                basePosition = Vector3.SmoothDamp(basePosition, DesiredPosition(), ref velocity, smoothTime);
+
+            Vector2 shake = ScreenShake.Step(Time.unscaledDeltaTime);
+            transform.position = basePosition + new Vector3(shake.x, shake.y, 0f);
         }
 
         Vector3 DesiredPosition()
         {
             Vector3 desired = target.position + target.up * lookAhead;
-            desired.z = transform.position.z;
+            desired.z = basePosition.z;
             return desired;
         }
     }

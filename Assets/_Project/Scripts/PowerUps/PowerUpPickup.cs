@@ -1,4 +1,6 @@
 using System.Collections.Generic;
+using TankBrawl.Audio;
+using TankBrawl.Core;
 using UnityEngine;
 
 namespace TankBrawl.PowerUps
@@ -83,6 +85,8 @@ namespace TankBrawl.PowerUps
 
             taken = true;
             tank.Apply(config);
+            AudioManager.PlayAt(Sfx.PowerUpPickup, transform.position);
+            Fx.Burst(transform.position, config.pickupColor, 14, 4f, 0.5f, 0.15f);
             Destroy(gameObject);
         }
 

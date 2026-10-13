@@ -118,7 +118,7 @@ namespace TankBrawl.AI
                 return false;
 
             WeaponConfig shotConfig = shot.Config;
-            if (shotConfig == null || shotConfig.speed <= 0f)
+            if (shotConfig == null || shot.Speed <= 0f)
                 return false;
 
             Vector2 origin = shot.transform.position;
@@ -137,7 +137,7 @@ namespace TankBrawl.AI
                 return false;
 
             float contact = Mathf.Max(0f, along - Mathf.Sqrt(reach * reach - side * side));
-            timeToHit = contact / shotConfig.speed;
+            timeToHit = contact / shot.Speed;
             if (timeToHit > profile.dodgeLookahead)
                 return false;
 

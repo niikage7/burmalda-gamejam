@@ -9,6 +9,9 @@ EditorBuildSettings:
     path: Assets/_Project/Scenes/Menu.unity
     guid: 174a79aee344b6c4585b2a0ed239d24c
   - enabled: 1
+    path: Assets/_Project/Scenes/Arena.unity
+    guid: 5d4f011671719c745bb16e4c6ccf1194
+  - enabled: 1
     path: Assets/_Project/Scenes/Sandbox/Tank.unity
     guid: e1b56d513af95b24db925d476581fb80
   - enabled: 1
@@ -26,9 +29,6 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/_Project/Scenes/Sandbox/Point.unity
     guid: 58f7e39714313c54bae6c94596a2c7be
-  - enabled: 1
-    path: Assets/_Project/Scenes/Sandbox/Match.unity
-    guid: 5d4f011671719c745bb16e4c6ccf1194
   m_configObjects:
     com.unity.dt.app-ui: {fileID: 11400000, guid: 1b1c20d82303e4b5781c3ef50ac1449f, type: 2}
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}

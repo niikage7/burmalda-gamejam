@@ -22,6 +22,12 @@ namespace TankBrawl.Core
 
         public Team Team => team;
 
+        /// <summary>Moves the tank to another team (a match mode sets the sides when it starts).</summary>
+        public void SetTeam(Team newTeam)
+        {
+            team = newTeam;
+        }
+
         /// <summary>The team of the human player (bushes hide the others from it). Set by the player's input component; Player until then.</summary>
         public static Team LocalTeam { get; set; } = Team.Player;
 

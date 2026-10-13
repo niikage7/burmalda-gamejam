@@ -23,6 +23,11 @@ MonoBehaviour:
   explosionDamage: 0
   explosionBlockDamage: 1
   explosionEffect: {fileID: 0}
+  fireSfx: 4
   fireInterval: 1.25
   tankHitRadius: 0.2
   wallHitRadius: 0.09
+  damagePerLevel: 0.5
+  explosionDamagePerLevel: 0
+  speedPerLevel: 0.03
+  fireRatePerLevel: 0.01

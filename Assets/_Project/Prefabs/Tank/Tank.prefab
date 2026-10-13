@@ -22,6 +22,7 @@ GameObject:
   - component: {fileID: 353212362483971043}
   - component: {fileID: 5816708495613327143}
   - component: {fileID: 9128643884278934812}
+  - component: {fileID: 3631427094900145650}
   m_Layer: 6
   m_Name: Tank
   m_TagString: Untagged
@@ -264,6 +265,18 @@ MonoBehaviour:
   barrel: {fileID: 6330278505740101371}
   trackStride: 0.25
   maxPlausibleSpeed: 30
+--- !u!114 &3631427094900145650
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 15709209314227761}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 66890bd34044d0f47b03865b5931e797, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TankBrawl.Tank.TankStats
 --- !u!1 &294398038448544280
 GameObject:
   m_ObjectHideFlags: 0

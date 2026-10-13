@@ -1,3 +1,5 @@
+using System;
+using TankBrawl.Match;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
@@ -5,8 +7,9 @@ using UnityEngine.SceneManagement;
 namespace TankBrawl.UI
 {
     /// <summary>
-    /// Back key (Escape; the Android Back button arrives as Escape): from any scene returns to the menu,
-    /// in the menu quits the app. Creates itself once per run, so no scene needs to contain it.
+    /// Back key (Escape; the Android Back button arrives as Escape): in a match it pauses (or leaves the result screen),
+    /// in the menu it walks one screen back and on the main screen quits the app, in any other scene it returns to the menu.
+    /// Creates itself once per run, so no scene needs to contain it.
     /// </summary>
     public class SceneNavigator : MonoBehaviour
     {
@@ -14,10 +17,14 @@ namespace TankBrawl.UI
 
         static SceneNavigator instance;
 
+        /// <summary>The menu screens set this: return true when the back key was used up (one screen back).</summary>
+        public static Func<bool> BackHandler { get; set; }
+
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         static void ResetStatics()
         {
             instance = null;
+            BackHandler = null;
         }
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
@@ -31,15 +38,30 @@ namespace TankBrawl.UI
             instance = host.AddComponent<SceneNavigator>();
         }
 
-        /// <summary>The "back" action: from any scene to the menu, in the menu quits the app.</summary>
+        /// <summary>The "back" action: see the class summary.</summary>
         public static void GoBack()
         {
+            if (MatchManager.Instance != null && MatchManager.Instance.Mode != null)
+            {
+                MatchManager.Instance.OnBackPressed();
+                return;
+            }
+
             if (SceneManager.GetActiveScene().name == MenuSceneName)
+            {
+                if (BackHandler != null && BackHandler())
+                    return;
+
                 Application.Quit();
+            }
             else if (Application.CanStreamedLevelBeLoaded(MenuSceneName))
+            {
                 SceneManager.LoadScene(MenuSceneName);
+            }
             else
+            {
                 Debug.LogWarning($"Scene '{MenuSceneName}' is not in Build Settings, cannot go back to the menu.");
+            }
         }
 
         void Update()

@@ -14,11 +14,17 @@ namespace TankBrawl.Match
         /// <summary>The single human player (the one with a player input).</summary>
         public readonly bool IsHuman;
 
+        /// <summary>"Я" for the human, "Бот N" for the others (numbered in the order they were found).</summary>
+        public string Name;
+
         /// <summary>Number among the tanks of its team (the human first); picks the spawn point.</summary>
         public int SpawnIndex;
 
         public int Kills;
         public int Deaths;
+
+        /// <summary>Points in modes with a personal score (deathmatch).</summary>
+        public int Score;
 
         // Where the tank stood when the match began; used when its team has no spawn points.
         public Vector3 StartPosition;

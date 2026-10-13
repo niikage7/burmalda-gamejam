@@ -1,4 +1,5 @@
 using System;
+using TankBrawl.Audio;
 using TankBrawl.Tank;
 using TankBrawl.Weapons;
 using UnityEngine;
@@ -74,7 +75,14 @@ namespace TankBrawl.PowerUps
             appliedAt[i] = Time.time;
 
             if (config.kind == PowerUpKind.Shield)
+            {
                 shield.Activate(config.duration, config.shieldBlinkTime);
+                AudioManager.PlayAt(Sfx.ShieldUp, transform.position);
+            }
+            else if (config.kind == PowerUpKind.Laser)
+            {
+                AudioManager.PlayAt(Sfx.LaserStart, transform.position);
+            }
 
 #if UNITY_EDITOR
             Debug.Log($"{name}: power-up {config.displayName} for {config.duration} s", this);

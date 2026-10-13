@@ -728,7 +728,7 @@ namespace TankBrawl.AI
         Vector2 AimDirection(Vector2 position)
         {
             Vector2 point = targetPosition;
-            float speed = weapon.Config.speed;
+            float speed = weapon.ProjectileSpeed;
             if (profile.leadFactor > 0f && targetBody != null && speed > 0f)
                 point += targetBody.linearVelocity * (targetDistance / speed * profile.leadFactor);
 

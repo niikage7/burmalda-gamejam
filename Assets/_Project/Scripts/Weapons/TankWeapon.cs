@@ -1,4 +1,5 @@
 using System;
+using TankBrawl.Audio;
 using TankBrawl.Core;
 using TankBrawl.Tank;
 using UnityEngine;
@@ -26,6 +27,7 @@ namespace TankBrawl.Weapons
         Rigidbody2D body;
         TankController tank;
         TeamMember member;
+        TankStats stats;
         ITankInput input;
         WeaponConfig overrideWeapon;
         int ammoIndex;
@@ -39,6 +41,15 @@ namespace TankBrawl.Weapons
         public WeaponConfig SelectedAmmo => ammoIndex == 0 || extraAmmo == null || ammoIndex > extraAmmo.Length ? weapon : extraAmmo[ammoIndex - 1];
 
         public int AmmoCount => 1 + (extraAmmo != null ? extraAmmo.Length : 0);
+
+        /// <summary>Weapon upgrade level of this tank (damage, projectile speed); 0 without <see cref="TankStats"/>.</summary>
+        public int WeaponLevel => stats != null ? stats.WeaponLevel : 0;
+
+        /// <summary>Fire-rate upgrade level of this tank.</summary>
+        public int FireLevel => stats != null ? stats.FireLevel : 0;
+
+        /// <summary>Speed of the next shot, units/s (the config speed plus the weapon upgrades).</summary>
+        public float ProjectileSpeed => Config.SpeedAt(WeaponLevel);
 
         /// <summary>Seconds until the gun can shoot again (0 = ready).</summary>
         public float CooldownLeft => Mathf.Max(0f, nextFireTime - Time.time);
@@ -66,6 +77,7 @@ namespace TankBrawl.Weapons
             body = GetComponent<Rigidbody2D>();
             tank = GetComponent<TankController>();
             member = GetComponent<TeamMember>();
+            TryGetComponent(out stats);
             input = GetComponent<ITankInput>();
             if (input == null)
                 Debug.LogError($"{name}: no ITankInput component, the tank will not shoot.", this);
@@ -92,6 +104,7 @@ namespace TankBrawl.Weapons
             if (input.CycleAmmoPressed && AmmoCount > 1)
             {
                 ammoIndex = (ammoIndex + 1) % AmmoCount;
+                AudioManager.PlayAt(Sfx.AmmoSwitch, body.position);
                 AmmoChanged?.Invoke();
             }
 
@@ -113,9 +126,13 @@ namespace TankBrawl.Weapons
                 return;
 
             bufferedFireUntil = 0f;
-            nextFireTime = Time.time + shot.fireInterval * FireIntervalScale;
+            nextFireTime = Time.time + shot.IntervalAt(FireLevel) * FireIntervalScale;
             Projectile projectile = Instantiate(shot.projectilePrefab);
-            projectile.Launch(shot, gameObject, member.Team, body.position, tank.Forward);
+            projectile.Launch(shot, gameObject, member.Team, body.position, tank.Forward, WeaponLevel);
+
+            Vector2 muzzle = body.position + tank.Forward * shot.muzzleOffset;
+            AudioManager.PlayAt(shot.fireSfx, muzzle);
+            Fx.MuzzleFlash(muzzle, tank.Forward);
             Fired?.Invoke();
         }
     }

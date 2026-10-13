@@ -1,3 +1,4 @@
+using TankBrawl.Audio;
 using TankBrawl.Core;
 using UnityEngine;
 
@@ -17,6 +18,7 @@ namespace TankBrawl.Tank
         [SerializeField] NitroConfig config;
 
         TankController tank;
+        TankStats stats;
         ITankInput input;
         float stock;
 
@@ -31,7 +33,8 @@ namespace TankBrawl.Tank
         /// <summary>Stock in seconds of boost.</summary>
         public float Current => stock;
 
-        public float Max => config != null ? config.capacity : 0f;
+        /// <summary>Capacity in seconds of boost: the config value plus the nitro upgrades.</summary>
+        public float Max => config != null ? config.capacity + (stats != null ? config.capacityPerLevel * stats.NitroLevel : 0f) : 0f;
 
         /// <summary>Stock as 0..1, for a future bar.</summary>
         public float Normalized => Max > 0f ? stock / Max : 0f;
@@ -43,6 +46,7 @@ namespace TankBrawl.Tank
         {
             tank = GetComponent<TankController>();
             input = GetComponent<ITankInput>();
+            TryGetComponent(out stats);
             if (input == null)
                 Debug.LogError($"{name}: no ITankInput component, nitro will not work.", this);
             if (config == null)
@@ -67,11 +71,15 @@ namespace TankBrawl.Tank
                 return;
 
             float dt = Time.fixedDeltaTime;
+            float capacity = Max;
 
-            if (IsLocked && stock >= config.reactivateStock * config.capacity)
+            if (IsLocked && stock >= config.reactivateStock * capacity)
                 IsLocked = false;
 
+            bool wasActive = IsActive;
             IsActive = input != null && input.NitroHeld && !IsLocked && stock > 0f;
+            if (IsActive && !wasActive && tank.IsDriving)
+                AudioManager.PlayAt(Sfx.NitroStart, transform.position);
 
             if (IsActive && tank.IsDriving)
             {
@@ -81,7 +89,7 @@ namespace TankBrawl.Tank
             }
             else
             {
-                stock = Mathf.Min(config.capacity, stock + config.regenPerSecond * config.capacity * dt);
+                stock = Mathf.Min(capacity, stock + config.regenPerSecond * capacity * dt);
             }
         }
     }

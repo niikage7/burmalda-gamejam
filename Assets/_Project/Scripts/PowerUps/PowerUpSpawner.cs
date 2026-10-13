@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using TankBrawl.Audio;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
@@ -126,7 +127,21 @@ namespace TankBrawl.PowerUps
             PowerUpPickup pickup = Instantiate(pickupPrefab, point.position, Quaternion.identity);
             pickup.Configure(chosen);
             onMap.Add(pickup);
+            AudioManager.PlayAt(Sfx.PowerUpSpawn, point.position);
             return true;
+        }
+
+        /// <summary>Removes every power-up from the map and restarts the first-delay countdown (a new round starts).</summary>
+        public void ResetSpawner()
+        {
+            for (int i = 0; i < onMap.Count; i++)
+            {
+                if (onMap[i] != null)
+                    Destroy(onMap[i].gameObject);
+            }
+
+            onMap.Clear();
+            timeLeft = Random.Range(firstDelay.x, firstDelay.y);
         }
 
         bool IsFree(Vector2 point)

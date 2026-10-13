@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using TankBrawl.Audio;
 using TankBrawl.Core;
 using TankBrawl.Map;
 using UnityEngine;
@@ -30,8 +31,9 @@ namespace TankBrawl.Weapons
             Broken.Clear();
         }
 
+        /// <param name="blastDamage">HP every other enemy in the radius takes (the config value plus the shooter's weapon upgrades).</param>
         /// <param name="directTarget">The unit that was hit by the projectile itself: it already took the direct damage.</param>
-        public static void Detonate(WeaponConfig config, Vector2 center, GameObject owner, Team team, IDamageable directTarget)
+        public static void Detonate(WeaponConfig config, float blastDamage, Vector2 center, GameObject owner, Team team, IDamageable directTarget)
         {
             if (config == null || !config.IsExplosive)
                 return;
@@ -41,6 +43,10 @@ namespace TankBrawl.Weapons
                 filter = new ContactFilter2D { useTriggers = false };
                 filterReady = true;
             }
+
+            AudioManager.PlayAt(Sfx.ExplosionBlast, center);
+            ScreenShake.AddAt(center, 0.3f);
+            Fx.Burst(center, new Color(1f, 0.7f, 0.25f, 1f), 14, 5f, 0.45f, 0.2f);
 
             if (config.explosionEffect != null)
             {
@@ -80,7 +86,7 @@ namespace TankBrawl.Weapons
                 Hurt.Add(target);
                 Vector2 away = (Vector2)hitCollider.bounds.center - center;
                 Vector2 direction = away.sqrMagnitude > Mathf.Epsilon ? away.normalized : Vector2.up;
-                target.TakeDamage(new DamageInfo(config.explosionDamage, 0, center, direction, owner));
+                target.TakeDamage(new DamageInfo(blastDamage, 0, center, direction, owner));
             }
         }
     }
