@@ -29,28 +29,27 @@ namespace TankBrawl.Match
             root.transform.SetParent(canvas.transform, false);
             UiKit.Stretch((RectTransform)root.transform);
 
-            Image dim = UiKit.CreateImage(root.transform, "Dim", UiKit.Dim, null, true);
+            Image dim = UiKit.CreateImage(root.transform, "Dim", new Color(0.078f, 0.063f, 0.059f, 0.6f), null, true);
             UiKit.Stretch(dim.rectTransform);
 
-            Image panel = UiKit.CreatePanel(root.transform, "Panel", UiKit.PanelColor);
-            UiKit.Place(panel.rectTransform, new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(720f, 640f));
+            UiPlate panel = UiStyle.Panel(root.transform, "Panel", 28f);
+            panel.Depth = 14f;
+            UiLayout.Mid(panel.rectTransform, 0f, 0f, 620f, 640f);
 
-            Text title = UiKit.CreateText(panel.transform, "Title", "ПАУЗА", 80, Color.white, TextAnchor.MiddleCenter, FontStyle.Bold);
-            UiKit.Place(title.rectTransform, new Vector2(0.5f, 1f), new Vector2(0f, -40f), new Vector2(600f, 100f));
-            title.rectTransform.pivot = new Vector2(0.5f, 1f);
+            Text title = UiStyle.Label(panel.transform, "Title", "ПАУЗА", 72, Color.white);
+            UiLayout.LT(title.rectTransform, 0f, 24f, 620f, 100f);
 
-            AddButton(panel.transform, "Continue", "ПРОДОЛЖИТЬ", UiKit.ButtonGreen, 170f, () => match.SetPaused(false));
-            AddButton(panel.transform, "Restart", "НАЧАТЬ ЗАНОВО", UiKit.ButtonBlue, 310f, () => match.RestartMatch());
-            AddButton(panel.transform, "Exit", "В МЕНЮ", UiKit.ButtonGray, 450f, () => match.ExitToMenu());
+            AddButton(panel.transform, "Continue", "ПРОДОЛЖИТЬ", UiStyle.Green, 150f, () => match.SetPaused(false));
+            AddButton(panel.transform, "Restart", "ЗАНОВО", UiStyle.Blue, 290f, () => match.RestartMatch());
+            AddButton(panel.transform, "Exit", "В МЕНЮ", UiStyle.Orange, 430f, () => match.ExitToMenu());
 
             root.SetActive(false);
         }
 
-        static void AddButton(Transform parent, string name, string label, Color color, float yFromTop, UnityEngine.Events.UnityAction onClick)
+        static void AddButton(Transform parent, string name, string label, UiStyle.Tone tone, float top, UnityEngine.Events.UnityAction onClick)
         {
-            Button button = UiKit.CreateButton(parent, name, label, color, new Vector2(520f, 110f), onClick, 44);
-            UiKit.Place(button.image.rectTransform, new Vector2(0.5f, 1f), new Vector2(0f, -yFromTop), new Vector2(520f, 110f));
-            button.image.rectTransform.pivot = new Vector2(0.5f, 1f);
+            UiButton button = UiStyle.Button(parent, name, label, tone, new Vector2(540f, 104f), onClick, 48);
+            UiLayout.LT(button.Plate.rectTransform, 40f, top, 540f, 104f);
         }
 
         void OnPauseChanged(bool paused)

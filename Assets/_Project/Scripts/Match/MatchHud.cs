@@ -8,7 +8,7 @@ namespace TankBrawl.Match
 {
     /// <summary>
     /// The in-match interface, built in code by <see cref="MatchManager"/>: the <see cref="ScoreBoard"/> at the top,
-    /// big banner and hint in the middle, the human's health and nitro bars, gears earned, damage vignette, kill feed,
+    /// big banner and hint in the middle, the human's health bar, gears earned, damage vignette, kill feed,
     /// pause panel and result screen. Sits below the touch controls (order 100) except the pause/result overlays.
     /// Every text comes from the mode as a cached string, so nothing is allocated per frame.
     /// </summary>
@@ -24,7 +24,6 @@ namespace TankBrawl.Match
 
         static readonly Color BarInk = new Color(0.07f, 0.08f, 0.13f, 1f);
         static readonly Color BarBack = new Color(0.1f, 0.12f, 0.18f, 0.9f);
-        static readonly Color NitroColor = new Color(0.35f, 0.7f, 1f, 1f);
 
         MatchManager match;
         IMatchMode mode;
@@ -34,11 +33,9 @@ namespace TankBrawl.Match
         Text gearsLabel;
         Text hpText;
         UiShape hpBar;
-        UiShape nitroBar;
         Image vignette;
 
         TankHealth humanHealth;
-        TankNitro humanNitro;
         int lastKillGears = -1;
         int lastHp = -1;
         float vignetteAlpha;
@@ -83,18 +80,13 @@ namespace TankBrawl.Match
 
             ScoreBoard.Create(safe, match);
 
-            banner = UiKit.CreateText(safe, "Banner", string.Empty, 104, Color.white, TextAnchor.MiddleCenter, FontStyle.Bold);
+            banner = UiStyle.Label(safe, "Banner", string.Empty, 104, Color.white, TextAnchor.MiddleCenter);
             UiKit.Place(banner.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0f, 150f), new Vector2(1600f, 260f));
 
-            hint = UiKit.CreateText(safe, "Hint", string.Empty, 40, Color.white, TextAnchor.MiddleCenter, FontStyle.Bold);
+            hint = UiStyle.Label(safe, "Hint", string.Empty, 40, Color.white, TextAnchor.MiddleCenter);
             UiKit.Place(hint.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0f, 20f), new Vector2(1200f, 60f));
 
             BuildPlayerBars();
-
-            // Kill feed: top right.
-            RectTransform feedRoot = UiKit.CreateRect("KillFeed", safe);
-            UiKit.Place(feedRoot, new Vector2(1f, 1f), new Vector2(-16f, -16f), new Vector2(560f, 240f));
-            feedRoot.gameObject.AddComponent<KillFeed>().Init(match);
 
             pausePanel = PausePanel.Create(match);
             endScreen = MatchEndScreen.Create(match);
@@ -104,7 +96,6 @@ namespace TankBrawl.Match
             {
                 humanHealth = human.Health;
                 humanHealth.Damaged += OnHumanDamaged;
-                human.Object.TryGetComponent(out humanNitro);
             }
         }
 
@@ -118,13 +109,8 @@ namespace TankBrawl.Match
             hpText = UiKit.CreateText(hpBar.transform, "Text", string.Empty, 22, Color.white, TextAnchor.MiddleCenter, FontStyle.Bold);
             UiKit.Stretch(hpText.rectTransform);
 
-            nitroBar = UiShape.Create(safe, "Nitro", BarBack, 7f, 4f);
-            nitroBar.OutlineColor = BarInk;
-            nitroBar.FillColor = NitroColor;
-            UiKit.Place(nitroBar.rectTransform, new Vector2(0f, 1f), new Vector2(16f, -162f), new Vector2(320f, 22f));
-
-            gearsLabel = UiKit.CreateText(safe, "Gears", string.Empty, 28, UiKit.Accent, TextAnchor.UpperLeft, FontStyle.Bold);
-            UiKit.Place(gearsLabel.rectTransform, new Vector2(0f, 1f), new Vector2(16f, -190f), new Vector2(520f, 40f));
+            gearsLabel = UiStyle.Label(safe, "Gears", string.Empty, 30, UiStyle.Yellow, TextAnchor.UpperLeft, false);
+            UiKit.Place(gearsLabel.rectTransform, new Vector2(0f, 1f), new Vector2(16f, -166f), new Vector2(520f, 40f));
         }
 
         void OnDestroy()
@@ -180,8 +166,6 @@ namespace TankBrawl.Match
                 hpText.text = hp + " / " + Mathf.RoundToInt(humanHealth.Max);
             }
 
-            if (humanNitro != null)
-                nitroBar.FillAmount = Mathf.Clamp01(humanNitro.Normalized);
         }
 
         void UpdateGears()

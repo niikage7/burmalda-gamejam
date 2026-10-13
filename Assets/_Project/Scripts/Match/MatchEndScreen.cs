@@ -39,6 +39,7 @@ namespace TankBrawl.Match
 
         MatchManager match;
         GameObject root;
+        UiPlate bannerPlate;
         Text headline;
         Text summary;
         Text scoreHeader;
@@ -70,22 +71,26 @@ namespace TankBrawl.Match
             root.transform.SetParent(canvas.transform, false);
             UiKit.Stretch((RectTransform)root.transform);
 
-            Image dim = UiKit.CreateImage(root.transform, "Dim", UiKit.Dim, null, true);
+            Image dim = UiKit.CreateImage(root.transform, "Dim", new Color(0.078f, 0.063f, 0.059f, 0.72f), null, true);
             UiKit.Stretch(dim.rectTransform);
 
-            Image panel = UiKit.CreatePanel(root.transform, "Panel", UiKit.PanelColor);
-            UiKit.Place(panel.rectTransform, new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(1400f, 900f));
+            UiPlate panel = UiStyle.Panel(root.transform, "Panel", 30f);
+            panel.Depth = 14f;
+            UiKit.Place(panel.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0f, -40f), new Vector2(1400f, 800f));
 
-            headline = UiKit.CreateText(panel.transform, "Headline", string.Empty, 110, Color.white, TextAnchor.MiddleCenter, FontStyle.Bold);
-            UiKit.Place(headline.rectTransform, new Vector2(0.5f, 1f), new Vector2(0f, -20f), new Vector2(1200f, 130f));
-            headline.rectTransform.pivot = new Vector2(0.5f, 1f);
+            // The banner sticks out above the panel, tilted; its colour is set in Show.
+            bannerPlate = UiStyle.Plate(root.transform, "Banner", UiStyle.Green, 30f, 6f, 14f, 18f, 12f);
+            UiLayout.TopMid(bannerPlate.rectTransform, 0f, 50f, 980f, 170f);
+            bannerPlate.rectTransform.localRotation = Quaternion.Euler(0f, 0f, 2f);
+            headline = UiStyle.Label(bannerPlate.transform, "Headline", string.Empty, 110, Color.white, TextAnchor.MiddleCenter);
+            UiKit.Stretch(headline.rectTransform);
 
-            summary = UiKit.CreateText(panel.transform, "Summary", string.Empty, 36, UiKit.Muted, TextAnchor.MiddleCenter, FontStyle.Bold);
-            UiKit.Place(summary.rectTransform, new Vector2(0.5f, 1f), new Vector2(0f, -150f), new Vector2(1200f, 50f));
+            summary = UiStyle.Label(panel.transform, "Summary", string.Empty, 30, Color.white, TextAnchor.MiddleCenter, false);
+            UiKit.Place(summary.rectTransform, new Vector2(0.5f, 1f), new Vector2(0f, -110f), new Vector2(1300f, 50f));
             summary.rectTransform.pivot = new Vector2(0.5f, 1f);
 
             // Above the buttons, under the table: the line about a newly opened difficulty.
-            unlockLabel = UiKit.CreateText(panel.transform, "Unlock", string.Empty, 40, UiKit.Good, TextAnchor.MiddleCenter, FontStyle.Bold);
+            unlockLabel = UiStyle.Label(panel.transform, "Unlock", string.Empty, 36, UiStyle.Yellow, TextAnchor.MiddleCenter, false);
             UiKit.Place(unlockLabel.rectTransform, new Vector2(0.5f, 0f), new Vector2(0f, 170f), new Vector2(1200f, 60f));
             unlockLabel.rectTransform.pivot = new Vector2(0.5f, 0f);
             unlockLabel.gameObject.SetActive(false);
@@ -99,7 +104,7 @@ namespace TankBrawl.Match
         void BuildTable(Transform parent)
         {
             RectTransform table = UiKit.CreateRect("Table", parent);
-            UiKit.Place(table, new Vector2(0f, 1f), new Vector2(50f, -225f), new Vector2(800f, 420f));
+            UiKit.Place(table, new Vector2(0f, 1f), new Vector2(50f, -170f), new Vector2(800f, 420f));
             table.pivot = new Vector2(0f, 1f);
 
             // Header.
@@ -146,11 +151,11 @@ namespace TankBrawl.Match
 
         void BuildRewards(Transform parent)
         {
-            Image box = UiKit.CreateImage(parent, "RewardBox", UiKit.PanelLight);
-            UiKit.Place(box.rectTransform, new Vector2(1f, 1f), new Vector2(-50f, -225f), new Vector2(460f, 420f));
+            UiPlate box = UiStyle.Plate(parent, "RewardBox", UiStyle.Dark, 20f, 4f, 6f, 0f, 0f);
+            UiKit.Place(box.rectTransform, new Vector2(1f, 1f), new Vector2(-50f, -170f), new Vector2(460f, 420f));
             box.rectTransform.pivot = new Vector2(1f, 1f);
 
-            Text title = UiKit.CreateText(box.transform, "Title", "НАГРАДА", 34, UiKit.Accent, TextAnchor.MiddleCenter, FontStyle.Bold);
+            Text title = UiStyle.Label(box.transform, "Title", "НАГРАДА", 34, UiStyle.Yellow, TextAnchor.MiddleCenter, false);
             UiKit.Place(title.rectTransform, new Vector2(0.5f, 1f), new Vector2(0f, -14f), new Vector2(420f, 50f));
             title.rectTransform.pivot = new Vector2(0.5f, 1f);
 
@@ -176,7 +181,7 @@ namespace TankBrawl.Match
                 rewards[i] = row;
             }
 
-            totalLabel = UiKit.CreateText(box.transform, "Total", string.Empty, 40, UiKit.Accent, TextAnchor.MiddleCenter, FontStyle.Bold);
+            totalLabel = UiStyle.Label(box.transform, "Total", string.Empty, 40, UiStyle.Yellow, TextAnchor.MiddleCenter, false);
             UiKit.Place(totalLabel.rectTransform, new Vector2(0.5f, 0f), new Vector2(0f, 62f), new Vector2(420f, 56f));
             totalLabel.rectTransform.pivot = new Vector2(0.5f, 0f);
 
@@ -187,26 +192,25 @@ namespace TankBrawl.Match
 
         void BuildButtons(Transform parent)
         {
-            AddButton(parent, "Again", "ЕЩЁ РАЗ", UiKit.ButtonGreen, -440f, () => match.RestartMatch());
-            AddButton(parent, "Upgrades", "УЛУЧШЕНИЯ", UiKit.ButtonBlue, 0f, () =>
+            AddButton(parent, "Again", "ЕЩЁ РАЗ", UiStyle.Green, -440f, () => match.RestartMatch());
+            AddButton(parent, "Upgrades", "ГАРАЖ", UiStyle.Blue, 0f, () =>
             {
                 MenuScreens.OpenUpgradesOnStart = true;
                 match.ExitToMenu();
             });
-            AddButton(parent, "Menu", "В МЕНЮ", UiKit.ButtonGray, 440f, () => match.ExitToMenu());
+            AddButton(parent, "Menu", "В МЕНЮ", UiStyle.Steel, 440f, () => match.ExitToMenu());
         }
 
-        static void AddButton(Transform parent, string name, string label, Color color, float x, UnityEngine.Events.UnityAction onClick)
+        static void AddButton(Transform parent, string name, string label, UiStyle.Tone tone, float x, UnityEngine.Events.UnityAction onClick)
         {
-            Button button = UiKit.CreateButton(parent, name, label, color, new Vector2(400f, 110f), onClick, 44);
-            UiKit.Place(button.image.rectTransform, new Vector2(0.5f, 0f), new Vector2(x, 36f), new Vector2(400f, 110f));
-            button.image.rectTransform.pivot = new Vector2(0.5f, 0f);
+            UiButton button = UiStyle.Button(parent, name, label, tone, new Vector2(400f, 110f), onClick, 48);
+            UiLayout.BottomMid(button.Plate.rectTransform, x, 40f, 400f, 110f);
         }
 
         void Show(MatchResult result)
         {
             headline.text = result.Headline;
-            headline.color = result.HumanWon ? UiKit.Good : UiKit.Bad;
+            bannerPlate.SetTone(result.HumanWon ? UiStyle.Green : UiStyle.Red);
             summary.text = result.ModeName + "   ·   " + result.Summary + "   ·   " + result.DifficultyName;
             scoreHeader.gameObject.SetActive(result.ShowScoreColumn);
 

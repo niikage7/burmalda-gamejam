@@ -37,7 +37,11 @@ namespace TankBrawl.PowerUps
         [Tooltip("How long the effect lasts, s. A second pick-up of the same kind refills it. Balance v0.2: explosive 15, laser 4. Rapid fire and shield are our own proposals. Ignored by the instant kinds (repair, nitro refill).")]
         [Min(0.1f)] public float duration = 10f;
 
-        [Header("Pick-up look (placeholder until real art)")]
+        [Header("Pick-up look")]
+        [Tooltip("Picture of the pick-up on the map (64 px, 64 PPU). Empty = a plain disc tinted with the colour below.")]
+        public Sprite pickupSprite;
+
+        [Tooltip("Colour of the burst when the pick-up is taken or fades; tints the disc when there is no sprite.")]
         public Color pickupColor = Color.white;
 
         [Header("Rapid fire")]
@@ -119,6 +123,7 @@ namespace TankBrawl.PowerUps
         {
             var config = CreateInstance<PowerUpConfig>();
             config.kind = kind;
+            config.pickupSprite = Resources.Load<Sprite>("PowerUpIcons/" + kind);
             if (kind == PowerUpKind.Repair)
             {
                 config.name = "Repair (default)";

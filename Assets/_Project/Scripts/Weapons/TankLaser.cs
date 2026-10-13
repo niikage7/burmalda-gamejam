@@ -28,6 +28,12 @@ namespace TankBrawl.Weapons
         [Tooltip("Where the beam starts, units from the hull centre.")]
         [SerializeField, Min(0f)] float muzzleOffset = 0.5f;
 
+        // The bright core inside the beam: lighter in the middle than at the edges.
+        const float CoreWidthShare = 0.38f;
+        const float CoreWhiten = 0.85f;
+
+        LineRenderer core;
+
         readonly Dictionary<IDamageable, float> nextHitAt = new Dictionary<IDamageable, float>();
 
         Rigidbody2D body;
@@ -73,6 +79,28 @@ namespace TankBrawl.Weapons
             member = GetComponent<TeamMember>();
             if (beam == null)
                 Debug.LogError($"{name}: the laser beam LineRenderer is not assigned.", this);
+            else
+                BuildCore();
+        }
+
+        // A second, thinner and nearly white line on top of the beam.
+        void BuildCore()
+        {
+            var host = new GameObject("Core");
+            host.transform.SetParent(beam.transform, false);
+            core = host.AddComponent<LineRenderer>();
+            core.sharedMaterial = beam.sharedMaterial;
+            core.useWorldSpace = beam.useWorldSpace;
+            core.positionCount = 2;
+            core.numCapVertices = beam.numCapVertices;
+            core.alignment = beam.alignment;
+            core.sortingLayerID = beam.sortingLayerID;
+            core.sortingOrder = beam.sortingOrder + 1;
+            core.widthMultiplier = beam.widthMultiplier * CoreWidthShare;
+            Color edge = beam.startColor;
+            Color light = Color.Lerp(edge, Color.white, CoreWhiten);
+            light.a = 1f;
+            core.startColor = core.endColor = light;
         }
 
         void OnEnable()
@@ -131,6 +159,11 @@ namespace TankBrawl.Weapons
             {
                 beam.SetPosition(0, origin + direction * muzzleOffset);
                 beam.SetPosition(1, origin + direction * Mathf.Max(length, muzzleOffset));
+                if (core != null)
+                {
+                    core.SetPosition(0, beam.GetPosition(0));
+                    core.SetPosition(1, beam.GetPosition(1));
+                }
             }
         }
 

@@ -1,5 +1,6 @@
 using TankBrawl.Input;
 using TankBrawl.PowerUps;
+using TankBrawl.Tank;
 using TankBrawl.Weapons;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -31,11 +32,28 @@ namespace TankBrawl.UI
         [Tooltip("Label of the ammo button: shows the selected projectile type.")]
         [SerializeField] Text ammoLabel;
 
+        [Header("Nitro ring around the nitro button")]
+        [Tooltip("Radial-filled ring (Image, Filled / Radial 360): how much nitro is left. Empty = no ring.")]
+        [SerializeField] Image nitroFill;
+
+        [Tooltip("The same ring as a dark track behind the fill (optional).")]
+        [SerializeField] Image nitroTrack;
+
+        [Tooltip("Fill colour when the nitro is nearly empty.")]
+        [SerializeField] Color nitroLowColor = new Color(0.106f, 0.435f, 0.722f, 1f);
+
+        [Tooltip("Fill colour when the nitro is full.")]
+        [SerializeField] Color nitroFullColor = new Color(0.455f, 0.843f, 0.984f, 1f);
+
+        [Tooltip("Fill colour while the nitro is locked after running dry.")]
+        [SerializeField] Color nitroLockedColor = new Color(0.51f, 0.59f, 0.69f, 1f);
+
         // Path of the stick's touch zone inside the content, and of the area it must stay in.
         const string StickZonePath = "SafeArea/Stick/Zone";
         const string SafeAreaPath = "SafeArea";
 
         TankPowerUps playerPowerUps;
+        TankNitro playerNitro;
         TankWeapon playerWeapon;
         RectTransform stickZone;
         RectTransform safeArea;
@@ -74,6 +92,7 @@ namespace TankBrawl.UI
                 return;
 
             player.TryGetComponent(out playerPowerUps);
+            player.TryGetComponent(out playerNitro);
             if (player.TryGetComponent(out playerWeapon))
             {
                 playerWeapon.AmmoChanged += ShowAmmo;
@@ -91,6 +110,7 @@ namespace TankBrawl.UI
 
         void Update()
         {
+            UpdateNitroRing();
             if (playerPowerUps == null)
                 return;
 
@@ -98,6 +118,17 @@ namespace TankBrawl.UI
                 SetPowerUpTime(secondsLeft, effectName);
             else
                 SetPowerUpTime(0f);
+        }
+
+        // The ring fills with the nitro stock: light at full, deep blue when low, grey while locked.
+        void UpdateNitroRing()
+        {
+            if (nitroFill == null || playerNitro == null)
+                return;
+
+            float level = Mathf.Clamp01(playerNitro.Normalized);
+            nitroFill.fillAmount = level;
+            nitroFill.color = playerNitro.IsLocked ? nitroLockedColor : Color.Lerp(nitroLowColor, nitroFullColor, level);
         }
 
         // After SafeAreaPanel (it applies in Update), and again only when the screen or the safe area changes.

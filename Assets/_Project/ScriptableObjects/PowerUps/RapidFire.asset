@@ -14,7 +14,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::TankBrawl.PowerUps.PowerUpConfig
   kind: 0
   displayName: "\u0421\u041A\u041E\u0420\u041E\u0421\u0422\u0420\u0415\u041B"
+  mapLabel: 
   duration: 10
+  pickupSprite: {fileID: 21300000, guid: 6c38c664ac459a7419ac4c635bf6d969, type: 3}
   pickupColor: {r: 1, g: 0.9, b: 0.2, a: 1}
   fireIntervalScale: 0.5
   explosiveWeapon: {fileID: 0}
@@ -24,3 +26,4 @@ MonoBehaviour:
   laserBeamRadius: 0.15
   laserSpeedMultiplier: 0.6
   shieldBlinkTime: 2
+  repairAmount: 30

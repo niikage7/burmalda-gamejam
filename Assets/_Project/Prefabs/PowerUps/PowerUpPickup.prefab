@@ -87,6 +87,10 @@ MonoBehaviour:
   sprite: {fileID: 3746794918099511969}
   pulseAmount: 0.1
   pulsePeriod: 1
+  labelHeight: 0.22
+  labelOffset: 0.55
+  expireWarning: 3
+  expireBlinkInterval: 0.15
 --- !u!1 &5364525382229790448
 GameObject:
   m_ObjectHideFlags: 0
@@ -114,7 +118,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.65, y: 0.65, z: 1}
+  m_LocalScale: {x: 0.9, y: 0.9, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 3315120882879652134}
@@ -195,7 +199,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &7329686439864544156
 Transform:
   m_ObjectHideFlags: 0

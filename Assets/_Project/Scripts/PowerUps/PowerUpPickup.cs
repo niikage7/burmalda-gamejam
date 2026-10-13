@@ -16,7 +16,7 @@ namespace TankBrawl.PowerUps
     {
         [SerializeField] PowerUpConfig config;
 
-        [Tooltip("Tinted with the config colour.")]
+        [Tooltip("Shows the config sprite (tinted with the config colour only when it has none).")]
         [SerializeField] SpriteRenderer sprite;
 
         [Tooltip("Gentle pulse so the pick-up is noticed, share of the size. 0 = none.")]
@@ -186,7 +186,12 @@ namespace TankBrawl.PowerUps
         void ApplyLook()
         {
             if (sprite != null && config != null)
-                sprite.color = config.pickupColor;
+            {
+                bool hasArt = config.pickupSprite != null;
+                if (hasArt)
+                    sprite.sprite = config.pickupSprite;
+                sprite.color = hasArt ? Color.white : config.pickupColor;
+            }
 
             string line = config != null ? config.MapLabel : string.Empty;
             if (label != null)

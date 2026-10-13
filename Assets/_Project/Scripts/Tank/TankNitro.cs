@@ -57,6 +57,8 @@ namespace TankBrawl.Tank
             body = GetComponent<Rigidbody2D>();
             input = GetComponent<ITankInput>();
             TryGetComponent(out stats);
+            if (!TryGetComponent<NitroTrail>(out _))
+                gameObject.AddComponent<NitroTrail>();
             if (input == null)
                 Debug.LogError($"{name}: no ITankInput component, nitro will not work.", this);
             if (config == null)
