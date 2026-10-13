@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using TankBrawl.Audio;
 using TankBrawl.Core;
 using UnityEngine;
 
@@ -9,6 +10,8 @@ namespace TankBrawl.Tank
     /// breaks bricks and hurts and shoves an enemy tank. Steel and water are not <see cref="IDamageable"/>, so they are left alone.
     /// Damage goes through <see cref="TankHealth.TakeDamage"/> (respects its invulnerability window); the shove goes
     /// through <see cref="TankController.ApplyKnockback"/>. Never rams the own team.
+    /// A tank takes one ram per contact: pinning an enemy against a wall hurts it once, not every cooldown.
+    /// The tanks have to come apart (the shove usually does it) before the next ram can land.
     /// </summary>
     [RequireComponent(typeof(TankController), typeof(TankNitro), typeof(TeamMember))]
     public class TankRam : MonoBehaviour
@@ -16,7 +19,17 @@ namespace TankBrawl.Tank
         // How far past the contact point a brick hit is reported, so it lands inside the brick (same as the projectile's).
         const float SurfacePenetration = 0.02f;
 
+        // Contact callbacks come every physics step while two tanks touch; a longer gap means they came apart.
+        const float ContactGap = 0.1f;
+
+        struct Contact
+        {
+            public float LastSeen;
+            public bool Struck;
+        }
+
         readonly Dictionary<TankHealth, float> nextHitAt = new Dictionary<TankHealth, float>();
+        readonly Dictionary<TankHealth, Contact> contacts = new Dictionary<TankHealth, Contact>();
 
         TankController tank;
         TankNitro nitro;
@@ -32,6 +45,7 @@ namespace TankBrawl.Tank
         void OnDisable()
         {
             nextHitAt.Clear();
+            contacts.Clear();
         }
 
         void OnCollisionEnter2D(Collision2D collision)
@@ -39,7 +53,7 @@ namespace TankBrawl.Tank
             TryRam(collision);
         }
 
-        // Pushing against something on nitro keeps hitting it, limited by the cooldown (tanks) or by the brick breaking at once.
+        // A contact that began without the ram conditions (nitro off, too slow) can still turn into a ram while it lasts.
         void OnCollisionStay2D(Collision2D collision)
         {
             TryRam(collision);
@@ -47,6 +61,10 @@ namespace TankBrawl.Tank
 
         void TryRam(Collision2D collision)
         {
+            // The contact is tracked before the ram conditions, so a long push is recognised as one contact.
+            TankHealth victim = collision.collider.GetComponentInParent<TankHealth>();
+            bool alreadyStruck = victim != null && TrackContact(victim);
+
             NitroConfig config = nitro.Config;
             if (config == null || !nitro.IsActive || tank.CurrentSpeed < config.ramMinSpeed || collision.contactCount == 0)
                 return;
@@ -61,12 +79,28 @@ namespace TankBrawl.Tank
             if (Vector2.Angle(tank.Forward, inward) > config.ramMaxAngle)
                 return;
 
-            Collider2D other = collision.collider;
-            TankHealth victim = other.GetComponentInParent<TankHealth>();
             if (victim != null)
-                RamTank(config, victim, contact.point, inward);
+            {
+                if (!alreadyStruck)
+                    RamTank(config, victim, contact.point, inward);
+            }
             else
-                BreakTerrain(config, other, contact.point, inward);
+            {
+                BreakTerrain(config, collision.collider, contact.point, inward);
+            }
+        }
+
+        // Returns true when this contact with the tank has already taken a ram.
+        bool TrackContact(TankHealth victim)
+        {
+            float now = Time.time;
+            contacts.TryGetValue(victim, out Contact contact);
+            if (now - contact.LastSeen > ContactGap)
+                contact.Struck = false;
+
+            contact.LastSeen = now;
+            contacts[victim] = contact;
+            return contact.Struck;
         }
 
         void RamTank(NitroConfig config, TankHealth victim, Vector2 point, Vector2 direction)
@@ -84,7 +118,13 @@ namespace TankBrawl.Tank
                 return;
             nextHitAt[victim] = now + config.ramCooldown;
 
+            Contact contact = contacts[victim];
+            contact.Struck = true;
+            contacts[victim] = contact;
+
             victim.TakeDamage(new DamageInfo(config.ramDamage, 0, point, direction, gameObject));
+            AudioManager.PlayAt(Sfx.RamHit, point);
+            ScreenShake.AddAt(point, 0.35f);
 
             if (victim.gameObject.activeInHierarchy && victim.TryGetComponent(out TankController victimTank))
                 victimTank.ApplyKnockback(direction * config.knockbackSpeed, config.knockbackDuration);

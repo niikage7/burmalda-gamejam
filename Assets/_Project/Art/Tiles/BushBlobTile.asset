@@ -1,0 +1,112 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3779ce3290e12284492a8cc4cd5ae691, type: 3}
+  m_Name: BushBlobTile
+  m_EditorClassIdentifier: Assembly-CSharp::TankBrawl.Map.BlobTile
+  connectGroup: bush
+  colliderType: 0
+  color: {r: 1, g: 1, b: 1, a: 1}
+  entries:
+  - mask: 0
+    sprite: {fileID: 21300000, guid: f338ca6024e435341afa4194b17d8e31, type: 3}
+  - mask: 1
+    sprite: {fileID: 21300000, guid: 108c40593e3669040b47c9b01f775acc, type: 3}
+  - mask: 4
+    sprite: {fileID: 21300000, guid: 739766b875764094eb01e04b01128b28, type: 3}
+  - mask: 5
+    sprite: {fileID: 21300000, guid: e119bb430a9742545b812465b08eaeb0, type: 3}
+  - mask: 7
+    sprite: {fileID: 21300000, guid: 14a6ba5214197654bab3436a58af96f8, type: 3}
+  - mask: 16
+    sprite: {fileID: 21300000, guid: e6e9dbdea25b68c48ae89ac969d64780, type: 3}
+  - mask: 17
+    sprite: {fileID: 21300000, guid: 8b306489e3e43a64980eaac7dc53025a, type: 3}
+  - mask: 20
+    sprite: {fileID: 21300000, guid: 5f7ff7b124aa065459e4d7b1faddfb90, type: 3}
+  - mask: 21
+    sprite: {fileID: 21300000, guid: 6bffd03bf6ca25548be1482c3ee5ddaf, type: 3}
+  - mask: 23
+    sprite: {fileID: 21300000, guid: 7c7bc8b7ecc69724b9e9f9be32fa3267, type: 3}
+  - mask: 28
+    sprite: {fileID: 21300000, guid: 6d8937b02d39b3a408409d62681fad10, type: 3}
+  - mask: 29
+    sprite: {fileID: 21300000, guid: 2b90443df06810a4f9c63120ec881cb7, type: 3}
+  - mask: 31
+    sprite: {fileID: 21300000, guid: a6bf562b19e067e4ca817bbbd63f212f, type: 3}
+  - mask: 64
+    sprite: {fileID: 21300000, guid: a9ecea7396023f64fa9ae11d4af4f318, type: 3}
+  - mask: 65
+    sprite: {fileID: 21300000, guid: 42a0e30df97ac754e9a8c1da200328e6, type: 3}
+  - mask: 68
+    sprite: {fileID: 21300000, guid: 97308415d8aa1834d9fbbe7e8f23af30, type: 3}
+  - mask: 69
+    sprite: {fileID: 21300000, guid: 9c583be16fd83a24c8d7218d3a8b2304, type: 3}
+  - mask: 71
+    sprite: {fileID: 21300000, guid: 5ac4d2370a4c2ad4a839d11ebbd0ccc4, type: 3}
+  - mask: 80
+    sprite: {fileID: 21300000, guid: 6d3f4465632b29b4f8c85121a121d239, type: 3}
+  - mask: 81
+    sprite: {fileID: 21300000, guid: bdbfd439ea9d3a244baa171d624555ad, type: 3}
+  - mask: 84
+    sprite: {fileID: 21300000, guid: 19845c92e86d6954c9e928f81bddfb0d, type: 3}
+  - mask: 85
+    sprite: {fileID: 21300000, guid: 7927a63a166211149959ad9d735715df, type: 3}
+  - mask: 87
+    sprite: {fileID: 21300000, guid: 09c25766102b21e469be818d11548f0c, type: 3}
+  - mask: 92
+    sprite: {fileID: 21300000, guid: 469dcfd53c7b3a446b81383369da94b7, type: 3}
+  - mask: 93
+    sprite: {fileID: 21300000, guid: 7267f24efa04f0c40ac743b689eb1a17, type: 3}
+  - mask: 95
+    sprite: {fileID: 21300000, guid: d081e39569000cf499659a4ea362925a, type: 3}
+  - mask: 112
+    sprite: {fileID: 21300000, guid: 046e2bfa25586a644bb4a937e7affcb1, type: 3}
+  - mask: 113
+    sprite: {fileID: 21300000, guid: 4d9e8c4f4ee7d074c98a51ada4bab444, type: 3}
+  - mask: 116
+    sprite: {fileID: 21300000, guid: 214fbcbf1eaef974eb4352182e1e5318, type: 3}
+  - mask: 117
+    sprite: {fileID: 21300000, guid: 6817d972236b13042aa0d254485ab55e, type: 3}
+  - mask: 119
+    sprite: {fileID: 21300000, guid: 460a384c29f13b04c883e74b8f4d9b6e, type: 3}
+  - mask: 124
+    sprite: {fileID: 21300000, guid: e4d0f45acbb91ed45860d7e04765138a, type: 3}
+  - mask: 125
+    sprite: {fileID: 21300000, guid: fb018ab21d6a99e479c62f26ab535fa2, type: 3}
+  - mask: 127
+    sprite: {fileID: 21300000, guid: f2c73f3d4cec80740ba11071da67f975, type: 3}
+  - mask: 193
+    sprite: {fileID: 21300000, guid: 864c25ce55f62ab4184f96500c942857, type: 3}
+  - mask: 197
+    sprite: {fileID: 21300000, guid: 535efa8708321784fa084cec0b1551fb, type: 3}
+  - mask: 199
+    sprite: {fileID: 21300000, guid: 9274e29e2102e36449b07c8fd9cc46ef, type: 3}
+  - mask: 209
+    sprite: {fileID: 21300000, guid: c3647c4bf7d14ad49b5400ecc9c5f0e1, type: 3}
+  - mask: 213
+    sprite: {fileID: 21300000, guid: 3f8f37de8b162d5429c58318baf38be0, type: 3}
+  - mask: 215
+    sprite: {fileID: 21300000, guid: 373149b5ea9f8ee4ba9657a84ab67f86, type: 3}
+  - mask: 221
+    sprite: {fileID: 21300000, guid: 36f757bbe86145941a9a61f7df47f29c, type: 3}
+  - mask: 223
+    sprite: {fileID: 21300000, guid: f19ed09f6aaeceb43b3bc4e17cb7bff9, type: 3}
+  - mask: 241
+    sprite: {fileID: 21300000, guid: 2b22068475402f342a1be2751bc02451, type: 3}
+  - mask: 245
+    sprite: {fileID: 21300000, guid: 1022f8a8149c84249a98e86d1dd967e3, type: 3}
+  - mask: 247
+    sprite: {fileID: 21300000, guid: 212d7041c9d48e942ae09c34d3246ddc, type: 3}
+  - mask: 253
+    sprite: {fileID: 21300000, guid: b48774828c75e1647a802ed5192258e6, type: 3}
+  - mask: 255
+    sprite: {fileID: 21300000, guid: 04f3b11ab4dc41640a21a6ab11e1580e, type: 3}

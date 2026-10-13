@@ -13,9 +13,11 @@ MonoBehaviour:
   m_Name: NitroConfig
   m_EditorClassIdentifier: Assembly-CSharp::TankBrawl.Tank.NitroConfig
   capacity: 3
+  capacityPerLevel: 0.25
   speed: 5
   regenPerSecond: 0.07
   reactivateStock: 0.1
+  minDrainSpeed: 1
   ramMinSpeed: 4
   ramMaxAngle: 45
   ramDamage: 25

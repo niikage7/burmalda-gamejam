@@ -3,7 +3,7 @@ using UnityEngine;
 namespace TankBrawl.UI
 {
     /// <summary>
-    /// Stretches this RectTransform over <see cref="Screen.safeArea"/> (display cutouts, rounded corners,
+    /// Stretches this RectTransform over <c>Screen.safeArea</c> (display cutouts, rounded corners,
     /// gesture bars). Put it under a Canvas and place the UI inside it. Re-applies on rotation / resolution change.
     /// </summary>
     [RequireComponent(typeof(RectTransform))]

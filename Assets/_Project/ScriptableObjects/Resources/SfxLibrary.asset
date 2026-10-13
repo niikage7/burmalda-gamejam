@@ -1,0 +1,218 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bec4417464fbbd449a5a297cb40b8b69, type: 3}
+  m_Name: SfxLibrary
+  m_EditorClassIdentifier: Assembly-CSharp::TankBrawl.Audio.SfxLibrary
+  entries:
+  - id: 1
+    clips:
+    - {fileID: 8300000, guid: a0abc091b74375d4a9d166c302eb6cf9, type: 3}
+    - {fileID: 8300000, guid: 33e59180c41524c43aa1e23731d6403d, type: 3}
+    - {fileID: 8300000, guid: 2a066fa23d9846343ad5a1fb12ee48a7, type: 3}
+    volume: 0.8
+    pitch: {x: 0.95, y: 1.05}
+  - id: 2
+    clips:
+    - {fileID: 8300000, guid: 9ca826e82edb2a2418b35b6b4d6da097, type: 3}
+    - {fileID: 8300000, guid: e4541508d2c8a6243863febc496ce402, type: 3}
+    volume: 0.8
+    pitch: {x: 0.95, y: 1.05}
+  - id: 3
+    clips:
+    - {fileID: 8300000, guid: 136471885f514f548985ee764395b413, type: 3}
+    - {fileID: 8300000, guid: 0df1ee82e899fca459948e429cd3a56b, type: 3}
+    volume: 0.85
+    pitch: {x: 0.95, y: 1.05}
+  - id: 4
+    clips:
+    - {fileID: 8300000, guid: 3bf166a243553224a9acff740d4d5e2a, type: 3}
+    - {fileID: 8300000, guid: 195253b12a22b754db98bfefd068a1a2, type: 3}
+    volume: 0.6
+    pitch: {x: 0.95, y: 1.05}
+  - id: 5
+    clips:
+    - {fileID: 8300000, guid: fa704f254f970ca42874f1ae8f5e01bf, type: 3}
+    - {fileID: 8300000, guid: 948595f4c6292ae48950ac887e3333ba, type: 3}
+    - {fileID: 8300000, guid: 3a71fb0e5d6f4184ab70151001479224, type: 3}
+    volume: 0.75
+    pitch: {x: 0.95, y: 1.05}
+  - id: 6
+    clips:
+    - {fileID: 8300000, guid: 2d8def76d3906654b97665e1329e0bfe, type: 3}
+    - {fileID: 8300000, guid: ce35d807d55dffd49b95a48ee6adc78b, type: 3}
+    - {fileID: 8300000, guid: de5af760c7d4c9c468d98f0d2929dbf2, type: 3}
+    volume: 0.9
+    pitch: {x: 0.95, y: 1.05}
+  - id: 7
+    clips:
+    - {fileID: 8300000, guid: 7bc247f3270ee7847a3b737115d5c049, type: 3}
+    - {fileID: 8300000, guid: 361fccbda55fa7945ab44622f1b9e9e9, type: 3}
+    volume: 0.7
+    pitch: {x: 0.95, y: 1.05}
+  - id: 8
+    clips:
+    - {fileID: 8300000, guid: 7ef7e49adf57a6340b704feca180481c, type: 3}
+    - {fileID: 8300000, guid: a5324ad9f2c89874a8ec2f431ed2e50e, type: 3}
+    volume: 0.95
+    pitch: {x: 0.95, y: 1.05}
+  - id: 9
+    clips:
+    - {fileID: 8300000, guid: f28a4634fb0da3b41ab64522273331e4, type: 3}
+    - {fileID: 8300000, guid: 925b0db1dbc920f41ac91d8ebbcb465f, type: 3}
+    volume: 0.9
+    pitch: {x: 0.95, y: 1.05}
+  - id: 10
+    clips:
+    - {fileID: 8300000, guid: b4e2c269abd93704fb52e9b65ef56e26, type: 3}
+    - {fileID: 8300000, guid: 38e7f0d23a13d084d9a59f46c9a9b35f, type: 3}
+    - {fileID: 8300000, guid: ccf1c853dfc42bf49a6124a1fef64090, type: 3}
+    volume: 0.7
+    pitch: {x: 0.95, y: 1.05}
+  - id: 11
+    clips:
+    - {fileID: 8300000, guid: 2de70fe931f62e54381bc4f018ee53ab, type: 3}
+    - {fileID: 8300000, guid: b797a24c0363a9d4d867ef74831795ca, type: 3}
+    - {fileID: 8300000, guid: fcbd42811dc69a340a1e1b2f7cc14693, type: 3}
+    volume: 0.7
+    pitch: {x: 0.95, y: 1.05}
+  - id: 12
+    clips:
+    - {fileID: 8300000, guid: 86f98c542d4220e44b9555c615e1a44f, type: 3}
+    - {fileID: 8300000, guid: 1c8dbd7832bc75a48bd07b2f7112a570, type: 3}
+    - {fileID: 8300000, guid: 2f1bdbdbaf1519c4e88c79926e3afb76, type: 3}
+    volume: 0.8
+    pitch: {x: 0.95, y: 1.05}
+  - id: 13
+    clips:
+    - {fileID: 8300000, guid: 62523c159314ffe45bb95fc9e380af82, type: 3}
+    volume: 0.35
+    pitch: {x: 0.95, y: 1.05}
+  - id: 14
+    clips:
+    - {fileID: 8300000, guid: 891e26669c9a3354c9411ccc53a20454, type: 3}
+    - {fileID: 8300000, guid: 26c38be296d99aa4db6ee75d2d7708c9, type: 3}
+    volume: 0.7
+    pitch: {x: 0.95, y: 1.05}
+  - id: 15
+    clips:
+    - {fileID: 8300000, guid: f2bf7cabd6196e94fa8dda0bbea4b304, type: 3}
+    - {fileID: 8300000, guid: fa484335831cc2c47a0cd525cf7626a7, type: 3}
+    volume: 0.9
+    pitch: {x: 0.95, y: 1.05}
+  - id: 16
+    clips:
+    - {fileID: 8300000, guid: 14891fbce656591478afaaba3b06396a, type: 3}
+    volume: 0.6
+    pitch: {x: 0.95, y: 1.05}
+  - id: 17
+    clips:
+    - {fileID: 8300000, guid: 946e32b7a51cbe14baa38837acd072bf, type: 3}
+    volume: 0.6
+    pitch: {x: 0.95, y: 1.05}
+  - id: 18
+    clips:
+    - {fileID: 8300000, guid: f100ce357122dd14dada60153202c291, type: 3}
+    volume: 0.5
+    pitch: {x: 0.95, y: 1.05}
+  - id: 19
+    clips:
+    - {fileID: 8300000, guid: b37daec602a260a4db538f64dc1445a9, type: 3}
+    volume: 0.6
+    pitch: {x: 0.95, y: 1.05}
+  - id: 20
+    clips:
+    - {fileID: 8300000, guid: 33fe9593bb608f94182538cb6bdc9923, type: 3}
+    volume: 0.55
+    pitch: {x: 0.95, y: 1.05}
+  - id: 21
+    clips:
+    - {fileID: 8300000, guid: 9c8d0a6ea20bea8448fd2df96aaaf112, type: 3}
+    volume: 0.7
+    pitch: {x: 0.95, y: 1.05}
+  - id: 22
+    clips:
+    - {fileID: 8300000, guid: 98056788861b34f459f1ad66bdf5a7d9, type: 3}
+    volume: 0.6
+    pitch: {x: 0.95, y: 1.05}
+  - id: 23
+    clips:
+    - {fileID: 8300000, guid: 87d2d4d54e7bfa646a7ef07a18cbab89, type: 3}
+    volume: 0.8
+    pitch: {x: 0.95, y: 1.05}
+  - id: 24
+    clips:
+    - {fileID: 8300000, guid: c0d02da2bdd7e70408a310bf72281fd3, type: 3}
+    volume: 0.5
+    pitch: {x: 0.95, y: 1.05}
+  - id: 25
+    clips:
+    - {fileID: 8300000, guid: 93b2fe2ce9e39174aabd05ed74a89d4e, type: 3}
+    volume: 0.8
+    pitch: {x: 0.95, y: 1.05}
+  - id: 26
+    clips:
+    - {fileID: 8300000, guid: 1f246619788db0f4dbb69230bef44ada, type: 3}
+    volume: 0.8
+    pitch: {x: 0.95, y: 1.05}
+  - id: 27
+    clips:
+    - {fileID: 8300000, guid: f665b5d0b8baa9b478cbbc55d742555a, type: 3}
+    volume: 0.9
+    pitch: {x: 0.95, y: 1.05}
+  - id: 28
+    clips:
+    - {fileID: 8300000, guid: 21df61a2d04fec747958900dfbf61e34, type: 3}
+    volume: 0.85
+    pitch: {x: 0.95, y: 1.05}
+  - id: 29
+    clips:
+    - {fileID: 8300000, guid: fcc2c0e19772be74292b13e876b10852, type: 3}
+    volume: 0.7
+    pitch: {x: 0.95, y: 1.05}
+  - id: 30
+    clips:
+    - {fileID: 8300000, guid: 9b1104d64bad6f042ad508e6ac5343b3, type: 3}
+    volume: 0.55
+    pitch: {x: 0.95, y: 1.05}
+  - id: 31
+    clips:
+    - {fileID: 8300000, guid: 2b12c6c160f38b74dac1b5fc3f2ef80f, type: 3}
+    volume: 0.55
+    pitch: {x: 0.95, y: 1.05}
+  - id: 32
+    clips:
+    - {fileID: 8300000, guid: d0313037b8a348148a4c1f6c2568b5c7, type: 3}
+    volume: 0.6
+    pitch: {x: 0.95, y: 1.05}
+  - id: 33
+    clips:
+    - {fileID: 8300000, guid: a01f6a0539b69784d863ee9fd11ff7c5, type: 3}
+    volume: 0.55
+    pitch: {x: 0.95, y: 1.05}
+  - id: 34
+    clips:
+    - {fileID: 8300000, guid: 287faecad8ff7894e81f1d7032e7d80c, type: 3}
+    volume: 0.7
+    pitch: {x: 0.95, y: 1.05}
+  - id: 35
+    clips:
+    - {fileID: 8300000, guid: e9fd433ee5501044eb722d55da40e9c4, type: 3}
+    volume: 0.55
+    pitch: {x: 0.95, y: 1.05}
+  - id: 36
+    clips:
+    - {fileID: 8300000, guid: f5a2a762e8e87da49a4f40984cefe1ee, type: 3}
+    volume: 0.45
+    pitch: {x: 0.95, y: 1.05}
+  menuMusic: {fileID: 8300000, guid: 68170c8a188a964499f2060a6ea47675, type: 3}
+  battleMusic: {fileID: 8300000, guid: ffa7b0666845d5544b85beb62518655c, type: 3}
+  musicBaseVolume: 0.5

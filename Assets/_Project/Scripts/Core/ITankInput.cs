@@ -13,6 +13,9 @@ namespace TankBrawl.Core
 
         bool FireHeld { get; }
 
+        /// <summary>True only on the frame the fire button went down, even for a tap shorter than a frame. Read it in Update.</summary>
+        bool FirePressed { get; }
+
         bool NitroHeld { get; }
 
         /// <summary>True only on the frame the ammo switch was requested. Read it in Update.</summary>

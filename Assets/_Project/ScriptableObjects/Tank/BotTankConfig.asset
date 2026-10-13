@@ -15,9 +15,12 @@ MonoBehaviour:
   moveSpeed: 2.6
   acceleration: 20
   deceleration: 25
+  speedPerLevel: 0.01
   rotationSpeed: 450
   driveThreshold: 0.5
   maxDriveAngle: 60
   maxHealth: 100
+  healthPerLevel: 4
   hitInvulnerability: 0.3
   hitBlinkInterval: 0.05
+  spawnBlinkInterval: 0.15

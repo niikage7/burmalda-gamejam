@@ -16,6 +16,9 @@ namespace TankBrawl.Tank
         [Tooltip("How fast the tank stops when the stick is released, units/s².")]
         [Min(0f)] public float deceleration = 25f;
 
+        [Tooltip("Added to the top speed per upgrade level (engine for the player, threat rank for bots), units/s. Balance v0.2: player 0.15, bot 0.01")]
+        [Min(0f)] public float speedPerLevel;
+
         [Header("Turning")]
         [Tooltip("Hull turn speed, deg/s.")]
         [Min(0f)] public float rotationSpeed = 450f;
@@ -30,10 +33,16 @@ namespace TankBrawl.Tank
         [Tooltip("Balance v0.2: 100 HP. No regeneration.")]
         [Min(1f)] public float maxHealth = 100f;
 
+        [Tooltip("Added to the max health per upgrade level (hull for the player, threat rank for bots), HP. Balance v0.2: player 10, bot 4")]
+        [Min(0f)] public float healthPerLevel;
+
         [Tooltip("After a hit the tank ignores further damage for this long, s. Balance v0.2: 0.3")]
         [Min(0f)] public float hitInvulnerability = 0.3f;
 
         [Tooltip("Blink period of the sprites while invulnerable, s. Visual only.")]
         [Min(0.01f)] public float hitBlinkInterval = 0.05f;
+
+        [Tooltip("Blink period of the sprites during spawn protection (slower than the hit blink, so the two read differently), s. Visual only.")]
+        [Min(0.01f)] public float spawnBlinkInterval = 0.15f;
     }
 }

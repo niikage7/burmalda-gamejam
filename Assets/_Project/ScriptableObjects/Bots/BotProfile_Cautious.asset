@@ -1,0 +1,73 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cfa4b39f09af4604e9fab4eea126a6cd, type: 3}
+  m_Name: BotProfile_Cautious
+  m_EditorClassIdentifier: Assembly-CSharp::TankBrawl.AI.BotProfile
+  reactionDelayMin: 0.25
+  reactionDelayMax: 0.45
+  aimSpreadDegrees: 6
+  fireAlignTolerance: 2
+  leadFactor: 0.5
+  fireRange: 10
+  preferredDistance: 6
+  distanceBand: 1
+  strafeSwitchMin: 2
+  strafeSwitchMax: 4.5
+  aimLeadTime: 0.3
+  steelPointBlankDistance: 1.5
+  aggression: 0.15
+  decisionInterval: 0.3
+  nitroRamDistance: 3.5
+  nitroStartStock: 0.7
+  nitroStopStock: 0.1
+  nitroAlignTolerance: 15
+  ramMaxDuration: 2.5
+  ramCooldown: 5
+  retreatHealthFraction: 0.55
+  retreatDuration: 8
+  retreatLockout: 8
+  retreatCornerDistance: 3
+  retreatPickupDistance: 12
+  coverSamples: 14
+  coverMinDistance: 4
+  coverMaxDistance: 10
+  coverReplanInterval: 1.5
+  powerUpGreed: 0.9
+  powerUpMaxDistance: 14
+  combatPowerUpDistance: 6
+  powerUpGiveUpTime: 8
+  pointDuty: 0.9
+  holdSpotInterval: 4
+  pointLeash: 3
+  pointPull: 2
+  targetHoldTime: 3
+  retargetDistanceRatio: 0.6
+  patrolMinDistance: 6
+  patrolMaxTime: 12
+  dodgeChance: 0.85
+  dodgeLookahead: 0.6
+  dodgeSightRange: 9
+  dodgeReactionMin: 0.06
+  dodgeReactionMax: 0.15
+  dodgeDuration: 0.5
+  dodgeDistance: 1.5
+  dodgeMargin: 0.1
+  dodgeNitroTime: 0.3
+  perceptionInterval: 0.1
+  retargetInterval: 1
+  waypointRadius: 0.2
+  repathInterval: 0.5
+  repathGoalDistance: 1
+  stuckTime: 1
+  stuckMinDistance: 0.25
+  reverseDuration: 0.6
+  reverseAngleSpread: 30

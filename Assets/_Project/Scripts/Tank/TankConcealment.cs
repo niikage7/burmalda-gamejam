@@ -20,8 +20,14 @@ namespace TankBrawl.Tank
         BushTilemap bushes;
         bool inBush;
 
-        /// <summary>True when an enemy tank is hidden from the player. Bots use it too.</summary>
-        public bool IsConcealed => IsHiddenFrom(Team.Player);
+        /// <summary>True when this tank is hidden from the human player (always false for the player's own team).</summary>
+        public bool IsConcealed => IsHiddenFrom(TeamMember.LocalTeam);
+
+        /// <summary>True when this tank stands in a bush (for any observer).</summary>
+        public bool InBush => inBush;
+
+        /// <summary>Opacity the human player sees this tank with: 1 outside bushes, translucent for the player's team, 0 for other teams.</summary>
+        public float VisibilityAlpha => !inBush ? 1f : (member.Team == TeamMember.LocalTeam ? ownAlphaInBush : 0f);
 
         /// <summary>True when this tank stands in a bush and <paramref name="observer"/> belongs to the other team.</summary>
         public bool IsHiddenFrom(Team observer) => inBush && member.Team != observer;
@@ -29,7 +35,7 @@ namespace TankBrawl.Tank
         void Awake()
         {
             member = GetComponent<TeamMember>();
-            renderers = GetComponentsInChildren<SpriteRenderer>();
+            renderers = TankHealthBar.FindTankRenderers(this);
             baseColors = new Color[renderers.Length];
             for (int i = 0; i < renderers.Length; i++)
                 baseColors[i] = renderers[i].color;
@@ -49,8 +55,7 @@ namespace TankBrawl.Tank
                 return;
 
             inBush = now;
-            float alpha = !inBush ? 1f : (member.Team == Team.Player ? ownAlphaInBush : 0f);
-            ApplyAlpha(alpha);
+            ApplyAlpha(VisibilityAlpha);
         }
 
         void ApplyAlpha(float alpha)
