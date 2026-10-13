@@ -29,6 +29,15 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/_Project/Scenes/Sandbox/Point.unity
     guid: 58f7e39714313c54bae6c94596a2c7be
+  - enabled: 1
+    path: Assets/_Project/Scenes/Maps/Crossroads.unity
+    guid: c1f667dd07b354ebd9cefb5eb67027eb
+  - enabled: 1
+    path: Assets/_Project/Scenes/Maps/Maze.unity
+    guid: 3c335534e61cb4acaa571cb928e8d3c5
+  - enabled: 1
+    path: Assets/_Project/Scenes/Maps/River.unity
+    guid: 1cd984eb70c3a467c9af2757a24d62c0
   m_configObjects:
     com.unity.dt.app-ui: {fileID: 11400000, guid: 1b1c20d82303e4b5781c3ef50ac1449f, type: 2}
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
