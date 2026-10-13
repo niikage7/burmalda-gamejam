@@ -10,10 +10,14 @@ namespace TankBrawl.Match
     {
         public static MatchModeConfig Selected { get; set; }
 
+        /// <summary>Scene name of the map picked in the menu, so the menu shows the same map after a match. Null = the default arena.</summary>
+        public static string MapScene { get; set; }
+
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         static void ResetStatics()
         {
             Selected = null;
+            MapScene = null;
         }
     }
 }
