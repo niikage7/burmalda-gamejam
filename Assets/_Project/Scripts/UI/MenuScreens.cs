@@ -41,8 +41,17 @@ namespace TankBrawl.UI
         [Tooltip("The three modes in the order of MatchModeKind: Team, Point, Deathmatch.")]
         [SerializeField] MatchModeConfig[] modes = new MatchModeConfig[3];
 
-        [Tooltip("The arena scene every mode is played in.")]
+        [Tooltip("The arena scene a match is played in when no map from the list below is available.")]
         [SerializeField] string arenaScene = "Arena";
+
+        [Tooltip("Maps offered on the mode screen, in order. A map whose scene is not in the Build Settings is not shown. Scenes of the new maps are built by TankBrawl / Maps / Build New Maps.")]
+        [SerializeField] SceneEntry[] maps =
+        {
+            new SceneEntry { label = "Арена", sceneName = "Arena" },
+            new SceneEntry { label = "Перекрёсток", sceneName = "Crossroads" },
+            new SceneEntry { label = "Река", sceneName = "River" },
+            new SceneEntry { label = "Лабиринт", sceneName = "Maze" }
+        };
 
         [Tooltip("Test scenes listed under Settings > Debug.")]
         [SerializeField] SceneEntry[] debugScenes;
@@ -58,6 +67,9 @@ namespace TankBrawl.UI
         Button backButton;
         readonly List<UpgradeCard> upgradeCards = new List<UpgradeCard>();
         Text threatText;
+        readonly List<SceneEntry> availableMaps = new List<SceneEntry>();
+        int mapIndex;
+        Text mapLabel;
 
         sealed class UpgradeCard
         {
@@ -278,6 +290,8 @@ namespace TankBrawl.UI
                 x += cardWidth + gap;
             }
 
+            BuildMapPicker(root);
+
             Text reward = UiKit.CreateText(root, "Reward", string.Empty, 30, UiKit.Muted, TextAnchor.MiddleCenter, FontStyle.Normal);
             UiKit.Place(reward.rectTransform, new Vector2(0.5f, 0f), new Vector2(0f, 24f), new Vector2(1500f, 44f));
             reward.rectTransform.pivot = new Vector2(0.5f, 0f);
@@ -286,19 +300,77 @@ namespace TankBrawl.UI
                 reward.text = "За каждого уничтоженного врага +" + progression.gearsPerKill + ", за победу +" + progression.gearsPerWin + " шестерёнок";
         }
 
+        // "< КАРТА: name >" under the mode cards; shown only when there is more than one map to choose from.
+        void BuildMapPicker(Transform root)
+        {
+            CollectMaps();
+            if (availableMaps.Count < 2)
+                return;
+
+            Button previous = UiKit.CreateButton(root, "MapPrevious", "<", UiKit.ButtonGray, new Vector2(110f, 80f), () => ShiftMap(-1), 48);
+            UiKit.Place(previous.image.rectTransform, new Vector2(0.5f, 0f), new Vector2(-400f, 84f), new Vector2(110f, 80f));
+
+            mapLabel = UiKit.CreateText(root, "Map", string.Empty, 40, Color.white, TextAnchor.MiddleCenter, FontStyle.Bold);
+            UiKit.Place(mapLabel.rectTransform, new Vector2(0.5f, 0f), new Vector2(0f, 84f), new Vector2(640f, 80f));
+
+            Button next = UiKit.CreateButton(root, "MapNext", ">", UiKit.ButtonGray, new Vector2(110f, 80f), () => ShiftMap(1), 48);
+            UiKit.Place(next.image.rectTransform, new Vector2(0.5f, 0f), new Vector2(400f, 84f), new Vector2(110f, 80f));
+
+            ShowMap();
+        }
+
+        // The maps whose scenes are in the build, starting on the one picked last time.
+        void CollectMaps()
+        {
+            availableMaps.Clear();
+            if (maps != null)
+            {
+                foreach (SceneEntry entry in maps)
+                {
+                    if (!string.IsNullOrEmpty(entry.sceneName) && Application.CanStreamedLevelBeLoaded(entry.sceneName))
+                        availableMaps.Add(entry);
+                }
+            }
+
+            if (availableMaps.Count == 0)
+                availableMaps.Add(new SceneEntry { label = arenaScene, sceneName = arenaScene });
+
+            mapIndex = 0;
+            for (int i = 0; i < availableMaps.Count; i++)
+            {
+                if (availableMaps[i].sceneName == MatchSession.MapScene)
+                    mapIndex = i;
+            }
+        }
+
+        void ShiftMap(int step)
+        {
+            mapIndex = (mapIndex + step + availableMaps.Count) % availableMaps.Count;
+            MatchSession.MapScene = availableMaps[mapIndex].sceneName;
+            ShowMap();
+        }
+
+        void ShowMap()
+        {
+            if (mapLabel != null)
+                mapLabel.text = "КАРТА:  " + availableMaps[mapIndex].label;
+        }
+
         void StartMatch(MatchModeConfig config)
         {
             if (config == null)
                 return;
 
-            if (!Application.CanStreamedLevelBeLoaded(arenaScene))
+            string scene = availableMaps.Count > 0 ? availableMaps[mapIndex].sceneName : arenaScene;
+            if (!Application.CanStreamedLevelBeLoaded(scene))
             {
-                Debug.LogError($"Scene '{arenaScene}' is not in Build Settings.");
+                Debug.LogError($"Scene '{scene}' is not in Build Settings.");
                 return;
             }
 
             MatchSession.Selected = config;
-            SceneManager.LoadScene(arenaScene);
+            MatchSession.MapScene = scene;
+            SceneManager.LoadScene(scene);
         }
 
         // ---- Upgrades ----
