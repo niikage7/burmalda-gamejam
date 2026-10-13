@@ -86,6 +86,8 @@ namespace TankBrawl.AI
         ContactFilter2D wallFilter;
         readonly RaycastHit2D[] wallHits = new RaycastHit2D[MaxWallHits];
         readonly List<Vector2> path = new List<Vector2>();
+        readonly List<Vector2> scratchPath = new List<Vector2>();
+        BushTilemap bushes;
 
         Vector2 move;
         bool fire;
@@ -109,6 +111,15 @@ namespace TankBrawl.AI
         bool directClear;
         bool hasLastKnown;
         Vector2 lastKnownPosition;
+        bool splashClear;
+
+        // Searching the bushes where the enemy vanished
+        bool searching;
+        Vector2 searchCenter;
+        Vector2 searchPoint;
+        float searchUntil;
+        int searchesLeft;
+        bool searchShotDone;
         float aimOffsetDegrees;
 
         BotState baseState;
@@ -186,6 +197,7 @@ namespace TankBrawl.AI
         void OnEnable()
         {
             nav = FindAnyObjectByType<BotNavGrid>();
+            bushes = FindAnyObjectByType<BushTilemap>();
             if (nav == null)
                 Debug.LogError($"{name}: no BotNavGrid in the scene, the bot will drive straight at its target.", this);
 
@@ -254,6 +266,8 @@ namespace TankBrawl.AI
         void OnFired()
         {
             RollAim();
+            if (searching)
+                searchShotDone = true;
         }
 
         void ResetState()
@@ -268,7 +282,7 @@ namespace TankBrawl.AI
             targetHealth = null;
             retargetAt = 0f;
             nextPerceptionAt = 0f;
-            targetVisible = hasLineOfSight = directClear = hasLastKnown = false;
+            targetVisible = hasLineOfSight = directClear = splashClear = hasLastKnown = false;
             hasPath = false;
             pathFailed = false;
             nextRepathAt = 0f;
@@ -276,6 +290,8 @@ namespace TankBrawl.AI
             reverseUntil = 0f;
             hasPatrolPoint = false;
             seekBlockedUntil = 0f;
+            searching = false;
+            splashClear = false;
             nextRamAt = 0f;
             strafeSign = Random.value < 0.5f ? -1f : 1f;
             strafeRadialMode = StrafeNormal;
@@ -320,7 +336,7 @@ namespace TankBrawl.AI
             RefreshCandidates();
 
             TeamMember best = null;
-            float bestSqr = float.MaxValue;
+            float bestCost = float.MaxValue;
             for (int i = 0; i < Candidates.Count; i++)
             {
                 TeamMember candidate = Candidates[i];
@@ -330,11 +346,14 @@ namespace TankBrawl.AI
                 if (candidate.TryGetComponent(out TankConcealment hiding) && hiding.IsHiddenFrom(member.Team))
                     continue;
 
-                float sqr = ((Vector2)candidate.transform.position - position).sqrMagnitude;
-                if (sqr < bestSqr)
+                if (!InView(position, candidate.transform.position))
+                    continue;
+
+                float cost = TargetCost(position, candidate);
+                if (cost < bestCost)
                 {
                     best = candidate;
-                    bestSqr = sqr;
+                    bestCost = cost;
                 }
             }
 
@@ -352,16 +371,48 @@ namespace TankBrawl.AI
             if (currentAlive && targetVisible)
             {
                 bool held = Time.time - targetSetAt >= profile.targetHoldTime;
-                float currentDistance = Vector2.Distance(position, target.transform.position);
-                if (!held || Mathf.Sqrt(bestSqr) >= currentDistance * profile.retargetDistanceRatio)
+                if (!held || bestCost >= TargetCost(position, target) * profile.retargetDistanceRatio)
                     return;
             }
 
             SetTarget(best);
         }
 
+        // Lower is better: the length of the way to the enemy (an enemy behind a long wall is farther than it looks),
+        // shrunk for a wounded enemy and for one that is aiming at the bot right now.
+        float TargetCost(Vector2 position, TeamMember enemy)
+        {
+            Vector2 at = enemy.transform.position;
+            float cost = Vector2.Distance(position, at);
+            if (nav != null && !nav.IsSegmentWalkable(position, at) && nav.TryFindPath(position, at, scratchPath))
+                cost = PathLength(position, scratchPath);
+
+            if (enemy.TryGetComponent(out TankHealth enemyHealth) && enemyHealth.Max > 0f)
+                cost *= 1f - profile.woundedTargetPreference * (1f - Mathf.Clamp01(enemyHealth.Current / enemyHealth.Max));
+
+            Vector2 toMe = position - at;
+            if (toMe.sqrMagnitude > Mathf.Epsilon && Vector2.Angle(enemy.transform.up, toMe) <= profile.threatAngle)
+                cost *= 1f - profile.threatTargetPreference;
+
+            return cost;
+        }
+
+        static float PathLength(Vector2 from, List<Vector2> points)
+        {
+            float length = 0f;
+            Vector2 previous = from;
+            for (int i = 0; i < points.Count; i++)
+            {
+                length += Vector2.Distance(previous, points[i]);
+                previous = points[i];
+            }
+
+            return length;
+        }
+
         void SetTarget(TeamMember newTarget)
         {
+            searching = false;
             targetSetAt = Time.time;
             target = newTarget;
             targetTransform = newTarget != null ? newTarget.transform : null;
@@ -375,7 +426,7 @@ namespace TankBrawl.AI
                 newTarget.TryGetComponent(out targetHealth);
             }
 
-            targetVisible = hasLineOfSight = directClear = hasLastKnown = false;
+            targetVisible = hasLineOfSight = directClear = splashClear = hasLastKnown = false;
             hasPath = false;
         }
 
@@ -390,7 +441,7 @@ namespace TankBrawl.AI
 
             targetPosition = targetTransform.position;
             targetDistance = Vector2.Distance(position, targetPosition);
-            targetVisible = targetConcealment == null || !targetConcealment.IsHiddenFrom(member.Team);
+            targetVisible = (targetConcealment == null || !targetConcealment.IsHiddenFrom(member.Team)) && InView(position, targetPosition);
 
             if (targetVisible)
             {
@@ -399,7 +450,7 @@ namespace TankBrawl.AI
             }
             else
             {
-                hasLineOfSight = directClear = false;
+                hasLineOfSight = directClear = splashClear = false;
             }
 
             if (now < nextPerceptionAt)
@@ -417,6 +468,42 @@ namespace TankBrawl.AI
 
             hasLineOfSight = seen;
             directClear = seen && (nav == null || nav.IsSegmentWalkable(position, targetPosition));
+            splashClear = !seen && CanSplash(position);
+        }
+
+        // With explosive shells an enemy behind cover is still in reach when a shell bursting on that cover would catch it.
+        // The blast passes no walls, so this works at corners and edges of cover, not through a thick wall.
+        bool CanSplash(Vector2 position)
+        {
+            WeaponConfig shot = weapon.Config;
+            if (shot == null || !shot.IsExplosive || profile.splashReach <= 0f || targetDistance > profile.fireRange || targetDistance < 0.01f)
+                return false;
+
+            Vector2 direction = (targetPosition - position) / targetDistance;
+            int count = Physics2D.CircleCast(position, shot.wallHitRadius, direction, wallFilter, wallHits, targetDistance);
+            int nearest = -1;
+            for (int i = 0; i < count; i++)
+            {
+                if (nearest < 0 || wallHits[i].distance < wallHits[nearest].distance)
+                    nearest = i;
+            }
+
+            if (nearest < 0)
+                return false;
+
+            Vector2 burst = wallHits[nearest].centroid;
+            Vector2 toTarget = targetPosition - burst;
+            if (toTarget.magnitude > shot.explosionRadius * profile.splashReach)
+                return false;
+
+            return Explosion.Reaches(burst, targetPosition, toTarget.normalized, bodyRadius * 0.8f);
+        }
+
+        // Honest information: the bot knows only what a player would see on a screen centred on its tank. Walls do not hide
+        // (the view is from above), bushes do (checked separately).
+        bool InView(Vector2 position, Vector2 point)
+        {
+            return Mathf.Abs(point.x - position.x) <= profile.viewHalfWidth && Mathf.Abs(point.y - position.y) <= profile.viewHalfHeight;
         }
 
         // The projectile's wall hitbox swept along the line: if it gets through, the shot gets through.
@@ -474,7 +561,7 @@ namespace TankBrawl.AI
                 nextRamAt = now + profile.ramCooldown;
             }
 
-            bool canShoot = target != null && hasLineOfSight && targetDistance <= profile.fireRange;
+            bool canShoot = target != null && (hasLineOfSight || splashClear) && targetDistance <= profile.fireRange;
 
             if (UpdatePowerUpGoal(now, position, canShoot))
                 return BotState.Seek;
@@ -494,13 +581,23 @@ namespace TankBrawl.AI
             if (WantsToHold)
                 return BotState.Hold;
 
+            if (searching && ContinueSearch(now, position))
+                return BotState.Seek;
+
             if (hasLastKnown && now >= seekBlockedUntil)
             {
-                // The enemy is out of sight and the bot has reached where it was last seen: the trail ends.
+                // The enemy is out of sight and the bot has reached where it was last seen: the trail ends, but first
+                // the bot checks the bushes nearby, as a player would.
                 if (!targetVisible && (lastKnownPosition - position).sqrMagnitude < ArriveDistance * ArriveDistance)
+                {
                     hasLastKnown = false;
+                    if (BeginSearch(now, position))
+                        return BotState.Seek;
+                }
                 else
+                {
                     return BotState.Seek;
+                }
             }
 
             return BotState.Patrol;
@@ -679,10 +776,13 @@ namespace TankBrawl.AI
         bool ActSeek(float now, Vector2 position)
         {
             // A pick-up taken by someone else a moment ago: wait for the next decision.
-            if (pickupGoal == null && !hasLastKnown)
+            if (pickupGoal == null && !hasLastKnown && !searching)
                 return false;
 
-            Vector2 goal = pickupGoal != null ? (Vector2)pickupGoal.transform.position : lastKnownPosition;
+            if (pickupGoal == null && searching && ActSearch(position))
+                return false;
+
+            Vector2 goal = pickupGoal != null ? (Vector2)pickupGoal.transform.position : (searching ? searchPoint : lastKnownPosition);
             move = PathHeading(now, position, goal);
             TryOpportunisticFire(now, position);
 
@@ -694,6 +794,10 @@ namespace TankBrawl.AI
                     MarkUnreachable(now, pickupGoal);
                     ReleasePickup();
                 }
+                else if (searching)
+                {
+                    searching = false;
+                }
                 else
                 {
                     seekBlockedUntil = now + UnreachableForgetTime;
@@ -701,6 +805,60 @@ namespace TankBrawl.AI
             }
 
             return move != Vector2.zero;
+        }
+
+        // ---- Searching bushes ----
+
+        bool BeginSearch(float now, Vector2 position)
+        {
+            if (profile.searchBushes <= 0 || bushes == null)
+                return false;
+
+            searchCenter = lastKnownPosition;
+            searchUntil = now + profile.searchTime;
+            searchesLeft = profile.searchBushes;
+            searching = PickSearchPoint(position);
+            return searching;
+        }
+
+        // Keeps searching until the time is up, an enemy shows up or the bushes run out. True while the search goes on.
+        bool ContinueSearch(float now, Vector2 position)
+        {
+            if (targetVisible || now >= searchUntil)
+            {
+                searching = false;
+                return false;
+            }
+
+            bool done = searchShotDone || (searchPoint - position).sqrMagnitude < ArriveDistance * ArriveDistance;
+            if (done && (--searchesLeft <= 0 || !PickSearchPoint(position)))
+            {
+                searching = false;
+                return false;
+            }
+
+            return true;
+        }
+
+        bool PickSearchPoint(Vector2 position)
+        {
+            searchShotDone = false;
+            InvalidatePath();
+            return bushes.TryFindNear(searchCenter, profile.searchRadius, position, ArriveDistance, out searchPoint);
+        }
+
+        // Close to the bush with a clear line: turn to it and shoot into it instead of driving in. True while doing that.
+        bool ActSearch(Vector2 position)
+        {
+            Vector2 toBush = searchPoint - position;
+            float distance = toBush.magnitude;
+            if (distance > profile.searchShotDistance || distance < 0.01f || !IsLineClear(position, searchPoint))
+                return false;
+
+            Vector2 direction = toBush / distance;
+            move = direction * turnOnlyMagnitude;
+            fire = Vector2.Angle(tank.Forward, direction) <= profile.fireAlignTolerance * 2f && !SteelTooClose(position);
+            return true;
         }
 
         bool ActPatrol(float now, Vector2 position)
@@ -740,6 +898,10 @@ namespace TankBrawl.AI
         // A shot that hits steel right in front of the muzzle bounces back at the shooter.
         bool SteelTooClose(Vector2 position)
         {
+            // A shell that does not bounce (explosive kinds) cannot come back at the shooter.
+            if (weapon.Config.maxBounces == 0)
+                return false;
+
             float reach = Mathf.Min(profile.steelPointBlankDistance, targetDistance);
             int count = Physics2D.CircleCast(position, weapon.Config.wallHitRadius, tank.Forward, wallFilter, wallHits, reach);
 

@@ -8,6 +8,8 @@ namespace TankBrawl.PowerUps
     /// <summary>
     /// A power-up lying on the map. The first tank (any team) that drives into the trigger takes it and the object goes away.
     /// Can be placed in a scene by hand (assign <see cref="config"/>) or created by <see cref="PowerUpSpawner"/>.
+    /// A spawned pick-up disappears if nobody takes it in time (<see cref="ExpireAfter"/>), blinking before it goes;
+    /// a hand-placed one stays.
     /// </summary>
     [RequireComponent(typeof(Collider2D))]
     public class PowerUpPickup : MonoBehaviour
@@ -22,10 +24,16 @@ namespace TankBrawl.PowerUps
 
         [SerializeField, Min(0.1f)] float pulsePeriod = 1f;
 
+        [Tooltip("Before it disappears the pick-up blinks for this long, s.")]
+        [SerializeField, Min(0f)] float expireWarning = 3f;
+
+        [SerializeField, Min(0.02f)] float expireBlinkInterval = 0.15f;
+
         static readonly List<PowerUpPickup> Active = new List<PowerUpPickup>();
 
         Vector3 baseScale;
         bool taken;
+        float expiresAt = float.PositiveInfinity;
 
         /// <summary>Pick-ups lying on the map now. Read-only, for bots (index loop, no allocations).</summary>
         public static IReadOnlyList<PowerUpPickup> OnMap => Active;
@@ -52,6 +60,12 @@ namespace TankBrawl.PowerUps
             ClaimedBy = null;
         }
 
+        /// <summary>Makes the pick-up disappear after <paramref name="seconds"/> unless someone takes it first.</summary>
+        public void ExpireAfter(float seconds)
+        {
+            expiresAt = seconds > 0f ? Time.time + seconds : float.PositiveInfinity;
+        }
+
         /// <summary>Sets what this pick-up gives. For pick-ups created from code.</summary>
         public void Configure(PowerUpConfig newConfig)
         {
@@ -67,6 +81,17 @@ namespace TankBrawl.PowerUps
 
         void Update()
         {
+            float left = expiresAt - Time.time;
+            if (left <= 0f)
+            {
+                Fx.Burst(transform.position, config != null ? config.pickupColor : Color.white, 8, 2f, 0.4f, 0.12f);
+                Destroy(gameObject);
+                return;
+            }
+
+            if (sprite != null)
+                sprite.enabled = left > expireWarning || (int)(left / expireBlinkInterval) % 2 == 0;
+
             if (pulseAmount <= 0f)
                 return;
 

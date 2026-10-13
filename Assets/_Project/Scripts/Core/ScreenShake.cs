@@ -4,7 +4,7 @@ namespace TankBrawl.Core
 {
     /// <summary>
     /// Camera shake as "trauma": events add to it, it fades by itself, the shake strength grows with the square of it.
-    /// <see cref="CameraFollow"/> reads <see cref="Offset"/> every frame. Static, because several unrelated things shake the camera.
+    /// <see cref="CameraFollow"/> calls <see cref="Step"/> every frame. Static, because several unrelated things shake the camera.
     /// </summary>
     public static class ScreenShake
     {
@@ -16,7 +16,7 @@ namespace TankBrawl.Core
         static float trauma;
         static float seed;
 
-        /// <summary>Master switch (settings could turn the shake off).</summary>
+        /// <summary>Master switch for code (tests, cut-scenes). The player's setting is <see cref="Progress.PlayerProgress.ScreenShakeOn"/>; both must be on.</summary>
         public static bool Enabled { get; set; } = true;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
@@ -29,7 +29,7 @@ namespace TankBrawl.Core
         /// <summary>Adds <paramref name="amount"/> (0..1) of trauma. A hit on the player ~0.25, a tank explosion ~0.5.</summary>
         public static void Add(float amount)
         {
-            if (!Enabled)
+            if (!Enabled || !Progress.PlayerProgress.ScreenShakeOn)
                 return;
 
             trauma = Mathf.Clamp01(trauma + amount);

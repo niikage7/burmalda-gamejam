@@ -71,7 +71,7 @@ namespace TankBrawl.Match
 
         [Min(0)] public int survivalPoints = 1;
 
-        [Header("Extra goal (gears, on top of the kills and the win)")]
+        [Header("Extra goal (gears on top of the kills and the win; paid only when the match is won)")]
         [Tooltip("Text shown in the results. The condition itself is in the mode: Elimination = the human never died, Point = held the zone for the time below, Deathmatch = the kill count below.")]
         public string extraGoalText = "Без потерь: ни разу не погибнуть";
 

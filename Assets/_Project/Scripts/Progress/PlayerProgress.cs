@@ -23,6 +23,7 @@ namespace TankBrawl.Progress
             public float sfxVolume = 1f;
             public float musicVolume = 0.6f;
             public bool vibration = true;
+            public bool screenShake = true;
             public int matchesPlayed;
             public int matchesWon;
         }
@@ -82,6 +83,13 @@ namespace TankBrawl.Progress
         {
             get => Data.vibration;
             set { Data.vibration = value; Commit(); }
+        }
+
+        /// <summary>The camera shakes on hits and blasts (a setting; read by <see cref="Core.ScreenShake"/>).</summary>
+        public static bool ScreenShakeOn
+        {
+            get => Data.screenShake;
+            set { Data.screenShake = value; Commit(); }
         }
 
         /// <summary>Writes a postponed change to disk once it is due (or at once with <paramref name="force"/>). Called by the audio manager every frame.</summary>
@@ -153,7 +161,8 @@ namespace TankBrawl.Progress
             {
                 sfxVolume = Data.sfxVolume,
                 musicVolume = Data.musicVolume,
-                vibration = Data.vibration
+                vibration = Data.vibration,
+                screenShake = Data.screenShake
             };
             data = fresh;
             Commit();

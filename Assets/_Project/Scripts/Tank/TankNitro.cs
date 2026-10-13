@@ -6,7 +6,8 @@ namespace TankBrawl.Tank
 {
     /// <summary>
     /// Nitro stock and state. Reads <see cref="ITankInput.NitroHeld"/>, so it does not care who drives the tank.
-    /// The stock drains only while the button is held and the tank is actually driving; otherwise it refills.
+    /// The stock drains only while the button is held and the tank is actually moving (not pressed against a wall);
+    /// otherwise it refills.
     /// Once emptied, nitro stays locked until a small minimum has refilled. Gives no invulnerability.
     /// <see cref="TankController"/> reads <see cref="IsActive"/> and <see cref="Speed"/>.
     /// </summary>
@@ -18,13 +19,14 @@ namespace TankBrawl.Tank
         [SerializeField] NitroConfig config;
 
         TankController tank;
+        Rigidbody2D body;
         TankStats stats;
         ITankInput input;
         float stock;
 
         public NitroConfig Config => config;
 
-        /// <summary>Nitro boosts the tank right now.</summary>
+        /// <summary>Nitro is switched on (the button is held and there is stock); it boosts the tank whenever it drives.</summary>
         public bool IsActive { get; private set; }
 
         /// <summary>The stock was emptied and has not refilled to the minimum yet.</summary>
@@ -42,9 +44,17 @@ namespace TankBrawl.Tank
         /// <summary>Top speed while <see cref="IsActive"/>, units/s.</summary>
         public float Speed => config != null ? config.speed : 0f;
 
+        /// <summary>Fills the stock to the maximum and lifts the lock (the nitro refill power-up and charging points).</summary>
+        public void Refill()
+        {
+            stock = Max;
+            IsLocked = false;
+        }
+
         void Awake()
         {
             tank = GetComponent<TankController>();
+            body = GetComponent<Rigidbody2D>();
             input = GetComponent<ITankInput>();
             TryGetComponent(out stats);
             if (input == null)
@@ -81,7 +91,9 @@ namespace TankBrawl.Tank
             if (IsActive && !wasActive && tank.IsDriving)
                 AudioManager.PlayAt(Sfx.NitroStart, transform.position);
 
-            if (IsActive && tank.IsDriving)
+            // The body's velocity is what the last physics step left after collisions: near zero against a wall.
+            bool moving = body == null || body.linearVelocity.sqrMagnitude >= config.minDrainSpeed * config.minDrainSpeed;
+            if (IsActive && tank.IsDriving && moving)
             {
                 stock = Mathf.Max(0f, stock - dt);
                 if (stock <= 0f)

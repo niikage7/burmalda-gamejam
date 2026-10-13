@@ -62,6 +62,15 @@ namespace TankBrawl.Weapons
         /// <summary>Flight speed of this projectile, units/s (the config speed plus the shooter's weapon upgrades).</summary>
         public float Speed => speed;
 
+        /// <summary>The tank that fired it (its root object). After the first bounce the projectile can hit it too.</summary>
+        public GameObject Owner => owner;
+
+        /// <summary>Bounces off steel so far.</summary>
+        public int Bounces => bounces;
+
+        /// <summary>Bounces still possible: the wall after the last one destroys the projectile.</summary>
+        public int BouncesLeft => config != null ? Mathf.Max(0, config.maxBounces - bounces) : 0;
+
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         static void ResetStatics()
         {

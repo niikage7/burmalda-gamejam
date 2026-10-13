@@ -17,7 +17,8 @@ namespace TankBrawl.EditorTools
     /// <summary>
     /// Builds arena scenes from the text layouts in <c>Assets/_Project/Editor/MapLayouts</c> (legend inside each file).
     /// Every map is a copy of <c>Scenes/Arena.unity</c> (same manager, tanks, spawner, camera, lighting) with its tilemaps
-    /// repainted and the spawn points, power-up points, flag zone and base pads moved to the layout's markers.
+    /// repainted and the spawn points, power-up points, flag zone and base pads moved to the layout's markers;
+    /// nitro charging points are created from the 'n' markers.
     /// The scenes land in <c>Scenes/Maps</c> and are added to the Build Settings; the menu lists them in
     /// <c>MenuScreens.maps</c>. Menu: TankBrawl / Maps.
     /// </summary>
@@ -208,7 +209,7 @@ namespace TankBrawl.EditorTools
 
                 foreach (char c in layout.Rows[row])
                 {
-                    if (".#x~%12fpZ".IndexOf(c) < 0)
+                    if (".#x~%12fpZn".IndexOf(c) < 0)
                         return $"unknown character '{c}' in row {row + 1}";
                 }
             }
@@ -242,6 +243,7 @@ namespace TankBrawl.EditorTools
             Vector2 zone = PlaceZone(scene, layout);
             PlaceSpawnPoints(scene, layout, zone);
             PlacePowerUpPoints(scene, layout);
+            PlaceNitroStations(scene, layout);
             PlaceBasePads(scene, layout);
             PlaceTanksAndCamera(scene, zone);
 
@@ -479,6 +481,29 @@ namespace TankBrawl.EditorTools
             for (int i = 0; i < points.Count; i++)
                 array.GetArrayElementAtIndex(i).objectReferenceValue = points[i];
             serialized.ApplyModifiedPropertiesWithoutUndo();
+        }
+
+        // Charging points are made fresh every build (the template has none): one object per 'n' marker under NitroStations.
+        static void PlaceNitroStations(Scene scene, MapLayout layout)
+        {
+            Transform parent = FindRoot(scene, "NitroStations");
+            if (parent != null)
+                Object.DestroyImmediate(parent.gameObject);
+
+            List<Vector3Int> cells = layout.CellsOf('n');
+            if (cells.Count == 0)
+                return;
+
+            var root = new GameObject("NitroStations");
+            SceneManager.MoveGameObjectToScene(root, scene);
+            Ground ground = new Ground(scene);
+            for (int i = 0; i < cells.Count; i++)
+            {
+                var host = new GameObject("N" + (i + 1));
+                host.transform.SetParent(root.transform, false);
+                host.transform.position = ground.Centre(cells[i]);
+                host.AddComponent<NitroStation>();
+            }
         }
 
         // A pad sits on the cell nearest to the middle of its base's spawn points.

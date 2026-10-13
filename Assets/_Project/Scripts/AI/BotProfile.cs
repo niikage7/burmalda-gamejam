@@ -112,6 +112,12 @@ namespace TankBrawl.AI
         [Tooltip("The bot gives up on a power-up after this long, s.")]
         [Min(1f)] public float powerUpGiveUpTime = 8f;
 
+        [Tooltip("A repair pick-up is worth a trip only below this share of the maximum health.")]
+        [Range(0f, 1f)] public float repairWantedBelow = 0.85f;
+
+        [Tooltip("A nitro refill pick-up is worth a trip only below this share of the nitro stock.")]
+        [Range(0f, 1f)] public float nitroRefillWantedBelow = 0.5f;
+
         [Header("Holding the point (only in scenes with a CapturePointZone)")]
         [Tooltip("Chance that this bot is a holder, rolled each time it spawns: a holder goes to the flag zone and defends it, the others hunt as usual. In a team of 3 the average number of holders is 3 × this.")]
         [Range(0f, 1f)] public float pointDuty = 0.7f;
@@ -129,8 +135,35 @@ namespace TankBrawl.AI
         [Tooltip("A target is kept at least this long before the bot may switch to another, s.")]
         [Min(0f)] public float targetHoldTime = 2f;
 
-        [Tooltip("The bot switches only if the new target is closer than the current one times this (0.7 = at least 30% closer). A target that is lost in a bush is dropped at once.")]
+        [Tooltip("The bot switches only if the new target's cost (the way to it, lowered for wounded and aiming enemies) is below the current one's times this (0.7 = at least 30% better). A target that is lost in a bush is dropped at once.")]
         [Range(0.1f, 1f)] public float retargetDistanceRatio = 0.7f;
+
+        [Header("Choosing the target: what makes an enemy a better target")]
+        [Tooltip("How much a wounded enemy is preferred: its cost (the length of the way to it) shrinks by this share at zero health. 0 = health does not matter.")]
+        [Range(0f, 0.9f)] public float woundedTargetPreference = 0.3f;
+
+        [Tooltip("How much an enemy that is aiming at the bot is preferred: its cost shrinks by this share. 0 = ignore.")]
+        [Range(0f, 0.9f)] public float threatTargetPreference = 0.3f;
+
+        [Tooltip("An enemy counts as aiming at the bot when its hull points at it within this angle, deg.")]
+        [Range(1f, 45f)] public float threatAngle = 12f;
+
+        [Header("Explosive shells")]
+        [Tooltip("With explosive shells the bot also shoots at cover next to an enemy when the burst would reach it: the burst point must be this share of the blast radius from the enemy or closer. 0 = never.")]
+        [Range(0f, 1f)] public float splashReach = 0.8f;
+
+        [Header("Searching bushes")]
+        [Tooltip("When the enemy vanished where it was last seen, the bot checks this many nearby bushes (drives up and shoots into each) before patrolling. 0 = no search.")]
+        [Min(0)] public int searchBushes = 2;
+
+        [Tooltip("Bushes farther than this from where the enemy vanished are not searched, units.")]
+        [Min(1f)] public float searchRadius = 5f;
+
+        [Tooltip("The whole search ends after this long, s.")]
+        [Min(1f)] public float searchTime = 8f;
+
+        [Tooltip("From this distance or closer the bot shoots into the bush instead of driving into it, units.")]
+        [Min(0.5f)] public float searchShotDistance = 4f;
 
         [Header("Patrol")]
         [Tooltip("A patrol point is at least this far from the bot, units.")]
@@ -165,6 +198,13 @@ namespace TankBrawl.AI
 
         [Tooltip("If the shot reaches the bot sooner than this, the dodge uses nitro (when available), s. 0 = never.")]
         [Min(0f)] public float dodgeNitroTime = 0.3f;
+
+        [Header("Vision (what a player would see on the screen)")]
+        [Tooltip("The bot notices enemies and pick-ups only this far sideways from itself, units: half the width of the player's screen (~9).")]
+        [Min(1f)] public float viewHalfWidth = 9f;
+
+        [Tooltip("The same up and down, units: half the height of the player's screen (~5).")]
+        [Min(1f)] public float viewHalfHeight = 5f;
 
         [Header("Perception")]
         [Tooltip("How often the line of sight and incoming shots are re-checked, s.")]

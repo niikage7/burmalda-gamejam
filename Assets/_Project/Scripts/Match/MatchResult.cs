@@ -9,7 +9,7 @@ namespace TankBrawl.Match
         /// <summary>The human achieved the main goal (their team won, or they placed first).</summary>
         public bool HumanWon;
 
-        /// <summary>The extra goal (see <see cref="MatchModeConfig.extraGoalText"/>) was achieved.</summary>
+        /// <summary>The extra goal (see <see cref="MatchModeConfig.extraGoalText"/>) was achieved. It pays only together with a win.</summary>
         public bool ExtraGoalDone;
 
         /// <summary>One line with the final score ("3 : 1", "112 : 87").</summary>

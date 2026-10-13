@@ -362,7 +362,7 @@ namespace TankBrawl.Match
         // ---- Spawning ----
 
         /// <summary>
-        /// A new round: clears projectiles, bricks and power-ups, then puts every tank, living or dead, on a spawn point with
+        /// A new round: clears projectiles, bricks and power-ups, recharges the nitro points, then puts every tank, living or dead, on a spawn point with
         /// full health, power-ups, nitro and the spawn protection.
         /// </summary>
         public void RespawnAll()
@@ -387,6 +387,7 @@ namespace TankBrawl.Match
 
             if (powerUpSpawner != null)
                 powerUpSpawner.ResetSpawner();
+            NitroStation.ResetAll();
         }
 
         /// <summary>Brings the tank back after <paramref name="delay"/> seconds (at once if it is not positive).</summary>
@@ -671,7 +672,8 @@ namespace TankBrawl.Match
                 total += progression.gearsPerWin;
             }
 
-            if (outcome.ExtraGoalDone && config.extraGoalGears > 0)
+            // Balance v0.2 §12: a lost match keeps only the gears already paid for kills, the extra goal included.
+            if (outcome.HumanWon && outcome.ExtraGoalDone && config.extraGoalGears > 0)
             {
                 result.Rewards.Add(new RewardLine { Label = config.extraGoalText, Gears = config.extraGoalGears });
                 total += config.extraGoalGears;

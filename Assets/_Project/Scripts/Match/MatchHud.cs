@@ -18,6 +18,10 @@ namespace TankBrawl.Match
         const int HudOrder = 90;
         const float CellHeight = 92f;
         const float VignetteFade = 1.6f;
+        const int VignetteTextureSize = 128;
+
+        // Edge-only red: generated once (placeholder until the art's ui_damage_vignette), dropped on Play Mode start.
+        static Sprite vignetteSprite;
         const string SpectatingHint = "Вы наблюдаете за союзником";
 
         sealed class Cell
@@ -53,6 +57,12 @@ namespace TankBrawl.Match
         PausePanel pausePanel;
         MatchEndScreen endScreen;
 
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        static void ResetStatics()
+        {
+            vignetteSprite = null;
+        }
+
         public static MatchHud Create(MatchManager owner)
         {
             var root = new GameObject("MatchHud");
@@ -79,7 +89,7 @@ namespace TankBrawl.Match
             UiKit.EnsureEventSystem();
             safe = UiKit.CreateSafeArea(canvas.transform);
 
-            vignette = UiKit.CreateImage(canvas.transform, "Vignette", new Color(0.85f, 0.05f, 0.05f, 0f));
+            vignette = UiKit.CreateImage(canvas.transform, "Vignette", new Color(0.85f, 0.05f, 0.05f, 0f), VignetteSprite());
             UiKit.Stretch(vignette.rectTransform);
             vignette.transform.SetAsFirstSibling();
 
@@ -157,7 +167,8 @@ namespace TankBrawl.Match
 
         void OnHumanDamaged(TankHealth health, float amount, GameObject source)
         {
-            vignetteAlpha = Mathf.Min(0.4f, 0.12f + amount / health.Max * 0.6f);
+            // The vignette is clear in the middle, so it can be strong at the edges without hiding the fight.
+            vignetteAlpha = Mathf.Min(0.85f, 0.3f + amount / health.Max * 1.2f);
         }
 
         void LateUpdate()
@@ -231,6 +242,38 @@ namespace TankBrawl.Match
             Color color = vignette.color;
             color.a = vignetteAlpha;
             vignette.color = color;
+        }
+
+        // Transparent in the middle, red towards the edges and strongest in the corners; stretched over the whole screen.
+        static Sprite VignetteSprite()
+        {
+            if (vignetteSprite != null)
+                return vignetteSprite;
+
+            const int size = VignetteTextureSize;
+            var texture = new Texture2D(size, size, TextureFormat.RGBA32, false)
+            {
+                wrapMode = TextureWrapMode.Clamp,
+                filterMode = FilterMode.Bilinear,
+                hideFlags = HideFlags.HideAndDontSave
+            };
+            var pixels = new Color32[size * size];
+            for (int y = 0; y < size; y++)
+            {
+                for (int x = 0; x < size; x++)
+                {
+                    float u = (x + 0.5f) / size * 2f - 1f;
+                    float v = (y + 0.5f) / size * 2f - 1f;
+                    float alpha = Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(0.55f, 1.25f, Mathf.Sqrt(u * u + v * v)));
+                    pixels[y * size + x] = new Color32(255, 255, 255, (byte)(alpha * 255f));
+                }
+            }
+
+            texture.SetPixels32(pixels);
+            texture.Apply();
+            vignetteSprite = Sprite.Create(texture, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f), size);
+            vignetteSprite.hideFlags = HideFlags.HideAndDontSave;
+            return vignetteSprite;
         }
 
         // ---- Score strip ----

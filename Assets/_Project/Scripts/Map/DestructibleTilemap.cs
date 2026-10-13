@@ -57,10 +57,17 @@ namespace TankBrawl.Map
         [Tooltip("Colour of the debris particles when a brick breaks.")]
         [SerializeField] Color brickDebrisColor = new Color(0.72f, 0.42f, 0.28f, 1f);
 
+        // A blast ray that hits a wall is pushed this far past the surface to find the struck cell.
+        const float SurfacePenetration = 0.02f;
+
+        // The ray to the nearest point of a cell aims slightly inside it, not at its very edge.
+        const float CellInset = 0.9f;
+
         readonly Dictionary<Vector3Int, int> damageTaken = new Dictionary<Vector3Int, int>();
         readonly List<PendingBrick> pending = new List<PendingBrick>();
         Tilemap tilemap;
         TilemapCollider2D tilemapCollider;
+        int wallMask;
 
         public DamageableKind Kind => DamageableKind.Terrain;
 
@@ -68,6 +75,7 @@ namespace TankBrawl.Map
         {
             tilemap = GetComponent<Tilemap>();
             TryGetComponent(out tilemapCollider);
+            wallMask = LayerMask.GetMask("Wall");
             if (brickTile == null)
                 Debug.LogError($"{name}: brick tile is not assigned, nothing will break.", this);
         }
@@ -105,7 +113,10 @@ namespace TankBrawl.Map
                 RebuildCollider();
         }
 
-        /// <summary>Damages every brick whose cell touches the circle (blast). Walls do not shield bricks from it.</summary>
+        /// <summary>
+        /// Damages every brick whose cell touches the circle (blast) and is the first wall on the way from the centre:
+        /// steel and the front bricks shield the ones behind them. Water does not shield.
+        /// </summary>
         public void DamageArea(Vector2 center, float radius, int blockDamage)
         {
             if (blockDamage <= 0 || brickTile == null)
@@ -129,7 +140,7 @@ namespace TankBrawl.Map
                     Vector3 cellCenter = tilemap.GetCellCenterWorld(cell);
                     float dx = Mathf.Max(Mathf.Abs(center.x - cellCenter.x) - half.x, 0f);
                     float dy = Mathf.Max(Mathf.Abs(center.y - cellCenter.y) - half.y, 0f);
-                    if (dx * dx + dy * dy <= radiusSqr)
+                    if (dx * dx + dy * dy <= radiusSqr && IsExposed(center, cell, cellCenter, half))
                         broke |= DamageCell(cell, blockDamage);
                 }
             }
@@ -137,6 +148,28 @@ namespace TankBrawl.Map
             // One collider rebuild for the whole blast, not one per brick.
             if (broke)
                 RebuildCollider();
+        }
+
+        // The cell is exposed when the first wall a ray from the centre meets is the cell itself: towards its nearest
+        // point or its centre. Bricks broken earlier in the same blast still shield (the collider is rebuilt after the loop).
+        bool IsExposed(Vector2 center, Vector3Int cell, Vector2 cellCenter, Vector2 half)
+        {
+            var nearest = new Vector2(
+                Mathf.Clamp(center.x, cellCenter.x - half.x * CellInset, cellCenter.x + half.x * CellInset),
+                Mathf.Clamp(center.y, cellCenter.y - half.y * CellInset, cellCenter.y + half.y * CellInset));
+            return FirstWallIs(center, nearest, cell) || FirstWallIs(center, cellCenter, cell);
+        }
+
+        bool FirstWallIs(Vector2 from, Vector2 to, Vector3Int cell)
+        {
+            Vector2 offset = to - from;
+            float distance = offset.magnitude;
+            if (distance < SurfacePenetration)
+                return tilemap.WorldToCell(from) == cell;
+
+            Vector2 direction = offset / distance;
+            RaycastHit2D hit = Physics2D.Raycast(from, direction, distance + SurfacePenetration, wallMask);
+            return hit.collider == null || tilemap.WorldToCell(hit.point + direction * SurfacePenetration) == cell;
         }
 
         // Returns true when the brick broke, i.e. the collider needs a rebuild.

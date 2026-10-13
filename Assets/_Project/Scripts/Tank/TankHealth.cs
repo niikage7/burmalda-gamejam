@@ -46,6 +46,15 @@ namespace TankBrawl.Tank
         /// <summary>A hit was absorbed by the shield.</summary>
         public event Action<TankHealth> ShieldAbsorbed;
 
+        /// <summary>Restores <paramref name="amount"/> HP, never above <see cref="Max"/> (the repair power-up). A dead tank is not healed.</summary>
+        public void Heal(float amount)
+        {
+            if (config == null || IsDead || amount <= 0f)
+                return;
+
+            Current = Mathf.Min(Max, Current + amount);
+        }
+
         /// <summary>Makes the tank immune for <paramref name="seconds"/> (and blink). Call after activating it.</summary>
         public void GrantSpawnProtection(float seconds)
         {
