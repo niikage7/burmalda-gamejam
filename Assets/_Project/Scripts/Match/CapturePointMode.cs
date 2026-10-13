@@ -16,6 +16,9 @@ namespace TankBrawl.Match
     {
         const float IntroSeconds = 2.5f;
 
+        static readonly Color ContestedColor = new Color(1f, 0.82f, 0.25f, 1f);
+        static readonly Color NeutralColor = new Color(0.45f, 0.5f, 0.6f, 1f);
+
         readonly float[] scores = new float[4];
         readonly int[] shown = new int[4];
 
@@ -29,6 +32,8 @@ namespace TankBrawl.Match
         float humanRespawnAt;
         float humanHoldSeconds;
         bool overtime;
+        bool contested;
+        bool lastContested;
         int lastOwner = -1;
 
         public CapturePointMode(MatchModeConfig config) : base(config)
@@ -59,7 +64,8 @@ namespace TankBrawl.Match
             match.RespawnAll();
             startedAt = Time.time;
             introEndsAt = startedAt + IntroSeconds;
-            SetTitle("УДЕРЖАНИЕ ТОЧКИ  ·  до " + config.scoreLimit);
+            SetTitle("УДЕРЖАНИЕ ТОЧКИ");
+            SetGoal("ДО " + config.scoreLimit);
             SetBanner("ДЕРЖИТЕ ТОЧКУ В ЦЕНТРЕ");
             AudioManager.Play(Sfx.RoundStart);
             Refresh();
@@ -83,11 +89,12 @@ namespace TankBrawl.Match
             if (zone != null)
                 ownerTeam = UpdateZone(dt);
 
-            if (ownerTeam != lastOwner)
+            if (ownerTeam != lastOwner || contested != lastContested)
             {
-                lastOwner = ownerTeam;
-                if (ownerTeam == (int)ourTeam)
+                if (ownerTeam != lastOwner && ownerTeam == (int)ourTeam)
                     AudioManager.Play(Sfx.ZoneCapture);
+                lastOwner = ownerTeam;
+                lastContested = contested;
                 Refresh();
             }
 
@@ -95,7 +102,8 @@ namespace TankBrawl.Match
             CheckEnd(now);
         }
 
-        // Counts the living tanks of every team in the zone. Returns the team that alone holds it, or -1.
+        // Counts the living tanks of every team in the zone. Returns the team that alone holds it, or -1
+        // (then `contested` tells whether several teams are inside or nobody is).
         int UpdateZone(float dt)
         {
             int owner = -1;
@@ -121,6 +129,7 @@ namespace TankBrawl.Match
                 }
             }
 
+            contested = teamsInside > 1;
             if (teamsInside != 1)
                 return -1;
 
@@ -189,11 +198,18 @@ namespace TankBrawl.Match
 
         void Refresh()
         {
-            ours.Value = shown[(int)ourTeam].ToString();
-            theirs.Value = shown[(int)theirTeam].ToString();
-            ours.Detail = lastOwner == (int)ourTeam ? "держим точку" : string.Empty;
-            theirs.Detail = lastOwner == (int)theirTeam ? "держат точку" : string.Empty;
+            Fill(ours, ourTeam);
+            Fill(theirs, theirTeam);
             BumpScore();
+
+            if (lastOwner == (int)ourTeam)
+                SetStatus("МЫ ДЕРЖИМ ТОЧКУ", TeamColors.Of(ourTeam));
+            else if (lastOwner == (int)theirTeam)
+                SetStatus("ВРАГ ДЕРЖИТ ТОЧКУ", TeamColors.Of(theirTeam));
+            else if (lastContested)
+                SetStatus("СПОР ЗА ТОЧКУ", ContestedColor);
+            else
+                SetStatus("ТОЧКА СВОБОДНА", NeutralColor);
 
             // The zone shows who holds it.
             if (zone != null)
@@ -203,6 +219,16 @@ namespace TankBrawl.Match
                 else
                     zone.SetNeutral();
             }
+        }
+
+        void Fill(ScoreEntry entry, Team team)
+        {
+            int points = shown[(int)team];
+            if (entry.Points != points || entry.Value.Length == 0)
+                entry.Value = points.ToString();
+            entry.Points = points;
+            entry.Progress = config.scoreLimit > 0 ? Mathf.Clamp01((float)points / config.scoreLimit) : 0f;
+            entry.Highlight = lastOwner == (int)team;
         }
     }
 }

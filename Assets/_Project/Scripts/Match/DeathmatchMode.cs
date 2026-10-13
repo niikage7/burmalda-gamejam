@@ -43,14 +43,17 @@ namespace TankBrawl.Match
             {
                 MatchParticipant p = match.Participants[i];
                 p.Score = 0;
-                byParticipant.Add(AddEntry(p.Team, p.Name, p.IsHuman));
+                ScoreEntry entry = AddEntry(p.Team, p.Name, p.IsHuman);
+                entry.Participant = p;
+                byParticipant.Add(entry);
                 aliveSince[i] = -1f;
             }
 
             match.RespawnAll();
             startedAt = Time.time;
             introEndsAt = startedAt + IntroSeconds;
-            SetTitle("ВСЕ ПРОТИВ ВСЕХ  ·  до " + config.scoreLimit);
+            SetTitle("ВСЕ ПРОТИВ ВСЕХ");
+            SetGoal("ДО " + config.scoreLimit);
             SetBanner("ВСЕ ПРОТИВ ВСЕХ");
             AudioManager.Play(Sfx.RoundStart);
             Refresh();
@@ -181,8 +184,13 @@ namespace TankBrawl.Match
 
             for (int i = 0; i < byParticipant.Count; i++)
             {
-                byParticipant[i].Value = match.Participants[i].Score.ToString();
-                byParticipant[i].Detail = unique && i == leader ? "лидер" : string.Empty;
+                ScoreEntry entry = byParticipant[i];
+                int points = match.Participants[i].Score;
+                if (entry.Points != points || entry.Value.Length == 0)
+                    entry.Value = points.ToString();
+                entry.Points = points;
+                entry.Progress = config.scoreLimit > 0 ? Mathf.Clamp01((float)points / config.scoreLimit) : 0f;
+                entry.Highlight = unique && i == leader && points > 0;
             }
 
             BumpScore();
