@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1ea60f96827dcf34f9234b4a35a4c8ac, type: 3}
+  m_Name: BotWeapon
+  m_EditorClassIdentifier: Assembly-CSharp::TankBrawl.Weapons.WeaponConfig
+  displayName: "\u041F\u0420\u041E\u0421\u0422\u041E\u0419"
+  projectilePrefab: {fileID: 8867409900629092452, guid: cbaa140388eba0741a3c68304d0368ef, type: 3}
+  speed: 9
+  muzzleOffset: 0.6875
+  maxBounces: 2
+  damage: 35
+  blockDamage: 2
+  explosionRadius: 0
+  explosionDamage: 0
+  explosionBlockDamage: 1
+  explosionEffect: {fileID: 0}
+  fireSfx: 4
+  fireInterval: 1.25
+  tankHitRadius: 0.2
+  wallHitRadius: 0.09
+  damagePerLevel: 0.5
+  explosionDamagePerLevel: 0
+  speedPerLevel: 0.03
+  fireRatePerLevel: 0.01

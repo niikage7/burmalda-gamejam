@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0c4be4ef2a874b44789a07cf2f1ba105, type: 3}
+  m_Name: NitroConfig
+  m_EditorClassIdentifier: Assembly-CSharp::TankBrawl.Tank.NitroConfig
+  capacity: 3
+  capacityPerLevel: 0.25
+  speed: 5
+  regenPerSecond: 0.07
+  reactivateStock: 0.1
+  minDrainSpeed: 1
+  ramMinSpeed: 4
+  ramMaxAngle: 45
+  ramDamage: 25
+  ramCooldown: 0.6
+  knockbackSpeed: 8
+  knockbackDuration: 0.3
+  ramBlockDamage: 99
+  brickBreakHalfWidth: 0.4

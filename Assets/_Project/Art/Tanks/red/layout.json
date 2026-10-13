@@ -1,0 +1,72 @@
+{
+  "name": "red",
+  "canvas": 96,
+  "pixelsPerUnit": 64,
+  "pivot": "center",
+  "note": "All layers share one canvas and pivot: place every part at local position (0,0).",
+  "layers": [
+    {
+      "name": "Shadow",
+      "files": [
+        "shadow"
+      ],
+      "order": 0,
+      "parent": ""
+    },
+    {
+      "name": "TrackLeft",
+      "files": [
+        "track_left_0",
+        "track_left_1"
+      ],
+      "order": 1,
+      "parent": ""
+    },
+    {
+      "name": "TrackRight",
+      "files": [
+        "track_right_0",
+        "track_right_1"
+      ],
+      "order": 1,
+      "parent": ""
+    },
+    {
+      "name": "Body",
+      "files": [
+        "body"
+      ],
+      "order": 2,
+      "parent": ""
+    },
+    {
+      "name": "Turret",
+      "files": [
+        "turret"
+      ],
+      "order": 4,
+      "parent": ""
+    },
+    {
+      "name": "Barrel",
+      "files": [
+        "barrel"
+      ],
+      "order": 3,
+      "parent": "Turret"
+    }
+  ],
+  "trackHalfSpacing": 0.3125,
+  "shadowOffset": [
+    0.05,
+    -0.07
+  ],
+  "turretPivot": [
+    -0.0125,
+    -0.0625
+  ],
+  "barrelMuzzle": [
+    -0.0156,
+    0.6875
+  ]
+}

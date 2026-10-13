@@ -1,0 +1,28 @@
+- name: Архитектура
+  href: architecture.md
+- name: Танк
+  href: tank.md
+- name: Оружие и снаряды
+  href: weapons.md
+- name: Усиления
+  href: powerups.md
+- name: Карта
+  href: map.md
+- name: Карты
+  href: maps.md
+- name: Боты
+  href: bots.md
+- name: Матч и режимы
+  href: match.md
+- name: Прокачка и сохранение
+  href: progression.md
+- name: Интерфейс и управление
+  href: ui.md
+- name: Звук и эффекты
+  href: audio-fx.md
+- name: Параметры в инспекторе
+  href: inspector.md
+- name: Рецепты
+  href: recipes.md
+- name: Как писать документацию
+  href: writing-docs.md

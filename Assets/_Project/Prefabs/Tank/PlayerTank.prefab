@@ -1,0 +1,155 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1001 &190910656297840804
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 15709209314227761, guid: 86b0d477565256f4ea0d4cf5c640f309, type: 3}
+      propertyPath: m_Name
+      value: PlayerTank
+      objectReference: {fileID: 0}
+    - target: {fileID: 304223345449883528, guid: 86b0d477565256f4ea0d4cf5c640f309, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 304223345449883528, guid: 86b0d477565256f4ea0d4cf5c640f309, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 304223345449883528, guid: 86b0d477565256f4ea0d4cf5c640f309, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 304223345449883528, guid: 86b0d477565256f4ea0d4cf5c640f309, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 304223345449883528, guid: 86b0d477565256f4ea0d4cf5c640f309, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 304223345449883528, guid: 86b0d477565256f4ea0d4cf5c640f309, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 304223345449883528, guid: 86b0d477565256f4ea0d4cf5c640f309, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 304223345449883528, guid: 86b0d477565256f4ea0d4cf5c640f309, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 304223345449883528, guid: 86b0d477565256f4ea0d4cf5c640f309, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 304223345449883528, guid: 86b0d477565256f4ea0d4cf5c640f309, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 981074638125958278, guid: 86b0d477565256f4ea0d4cf5c640f309, type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: 21300000, guid: 52859f2c88a64b740bea57c0a866cda1, type: 3}
+    - target: {fileID: 1229976326178139154, guid: 86b0d477565256f4ea0d4cf5c640f309, type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: 21300000, guid: ccdc1cfa83ca2714ab2aedff809dd137, type: 3}
+    - target: {fileID: 4289164733255231693, guid: 86b0d477565256f4ea0d4cf5c640f309, type: 3}
+      propertyPath: team
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5273966288550789874, guid: 86b0d477565256f4ea0d4cf5c640f309, type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: 21300000, guid: 7dad5fbc1da2b3d45ae06517b6e1f774, type: 3}
+    - target: {fileID: 5841952904103400787, guid: 86b0d477565256f4ea0d4cf5c640f309, type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: 21300000, guid: b9166c93b4f4c1643b92c647c433a088, type: 3}
+    - target: {fileID: 5841952904103400787, guid: 86b0d477565256f4ea0d4cf5c640f309, type: 3}
+      propertyPath: m_Color.b
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5841952904103400787, guid: 86b0d477565256f4ea0d4cf5c640f309, type: 3}
+      propertyPath: m_Color.g
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5841952904103400787, guid: 86b0d477565256f4ea0d4cf5c640f309, type: 3}
+      propertyPath: m_Color.r
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6070034715100881117, guid: 86b0d477565256f4ea0d4cf5c640f309, type: 3}
+      propertyPath: config
+      value: 
+      objectReference: {fileID: 11400000, guid: 386178b69161fa4428e4622b7154b25b, type: 2}
+    - target: {fileID: 6330278505740101371, guid: 86b0d477565256f4ea0d4cf5c640f309, type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: 21300000, guid: 93779a9d26f5b194daa9d7727e04fa0b, type: 3}
+    - target: {fileID: 6401717486207923215, guid: 86b0d477565256f4ea0d4cf5c640f309, type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: 21300000, guid: b0875c52b035dfd4ab274e787c49a657, type: 3}
+    - target: {fileID: 6401717486207923215, guid: 86b0d477565256f4ea0d4cf5c640f309, type: 3}
+      propertyPath: m_Color.b
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6401717486207923215, guid: 86b0d477565256f4ea0d4cf5c640f309, type: 3}
+      propertyPath: m_Color.g
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6401717486207923215, guid: 86b0d477565256f4ea0d4cf5c640f309, type: 3}
+      propertyPath: m_Color.r
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7330980533943949661, guid: 86b0d477565256f4ea0d4cf5c640f309, type: 3}
+      propertyPath: extraAmmo.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7330980533943949661, guid: 86b0d477565256f4ea0d4cf5c640f309, type: 3}
+      propertyPath: 'extraAmmo.Array.data[0]'
+      value: 
+      objectReference: {fileID: 11400000, guid: 46191bb39f104454d800f7c136816d92, type: 2}
+    - target: {fileID: 7951664778691192360, guid: 86b0d477565256f4ea0d4cf5c640f309, type: 3}
+      propertyPath: config
+      value: 
+      objectReference: {fileID: 11400000, guid: 386178b69161fa4428e4622b7154b25b, type: 2}
+    - target: {fileID: 9128643884278934812, guid: 86b0d477565256f4ea0d4cf5c640f309, type: 3}
+      propertyPath: skin
+      value: 
+      objectReference: {fileID: 11400000, guid: 3039036eef7e14b4ab50814e3c774857, type: 2}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 15709209314227761, guid: 86b0d477565256f4ea0d4cf5c640f309, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 4652028382329156553}
+  m_SourcePrefab: {fileID: 100100000, guid: 86b0d477565256f4ea0d4cf5c640f309, type: 3}
+--- !u!1 &185086614879880853 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 15709209314227761, guid: 86b0d477565256f4ea0d4cf5c640f309, type: 3}
+  m_PrefabInstance: {fileID: 190910656297840804}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &4652028382329156553
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 185086614879880853}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 318bc59007bc4e046bd9083f82719f55, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TankBrawl.Input.PlayerTankInput
+  moveAction: {fileID: -9185702505249998634, guid: c2362317109b32a4cba448ec009245ce, type: 3}
+  fireAction: {fileID: -9208654434216006093, guid: c2362317109b32a4cba448ec009245ce, type: 3}
+  nitroAction: {fileID: 6308079620408314699, guid: c2362317109b32a4cba448ec009245ce, type: 3}
+  cycleAmmoAction: {fileID: -8335172071408574961, guid: c2362317109b32a4cba448ec009245ce, type: 3}

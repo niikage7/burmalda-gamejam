@@ -1,0 +1,51 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0f780b69acf3bea4b9f3da99d486c117, type: 3}
+  m_Name: UiTheme
+  m_EditorClassIdentifier: Assembly-CSharp::TankBrawl.UI.UiTheme
+  panel: {fileID: 0}
+  button: {fileID: 0}
+  bar: {fileID: 0}
+  displayFont: {fileID: 12800000, guid: 8160d00a1d10f8b44827330f070b26ed, type: 3}
+  bodyFont: {fileID: 12800000, guid: ab86bbb5ed0ed084793bc77ca8731f9a, type: 3}
+  gear: {fileID: 21300000, guid: ba5de38bc4e6d8142bdab8da30bece12, type: 3}
+  gearGray: {fileID: 21300000, guid: 5fb8ff9cdddefc949990cd95ef4b4e94, type: 3}
+  killIcon: {fileID: 0}
+  lockIcon: {fileID: 21300000, guid: b99fa433516487d4a8d6f6f2ca222ed2, type: 3}
+  backIcon: {fileID: 21300000, guid: d50318aaa58ce984b865042475a58295, type: 3}
+  closeIcon: {fileID: 21300000, guid: 5b35aa69211bd2445b6afee31e61db5b, type: 3}
+  settingsIcon: {fileID: 21300000, guid: e92a3fadded09134088c23a4523c3ec2, type: 3}
+  pauseIcon: {fileID: 21300000, guid: 6c4c42318fb6038479906489b19c86c5, type: 3}
+  modeIcons:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  menuBackground: {fileID: 0}
+  logo: {fileID: 0}
+  victoryBanner: {fileID: 0}
+  defeatBanner: {fileID: 0}
+  grassTile: {fileID: 2800000, guid: 3cc94c34d219dce41a97e9f985c5ecd9, type: 3}
+  tankPreviews:
+  - {fileID: 21300000, guid: 1223c9f43f329b14f8b84587eb2e84b2, type: 3}
+  - {fileID: 21300000, guid: 8e7d50c444052fb4e9d7d741ba4a8609, type: 3}
+  - {fileID: 21300000, guid: 3ac42b5d5f811ef4b987aad50f7a96bf, type: 3}
+  - {fileID: 21300000, guid: d60a1cb3b997b874ca02d94f6ce2f144, type: 3}
+  mapPreviews:
+  - sceneName: Arena
+    sprite: {fileID: 21300000, guid: 01021b185e813254aa2500a3b9990870, type: 3}
+  - sceneName: Crossroads
+    sprite: {fileID: 21300000, guid: 40e28cad3120b9440873b5366434a4a7, type: 3}
+  - sceneName: River
+    sprite: {fileID: 21300000, guid: 0967b4e742dc52b4fabcd5018315df66, type: 3}
+  - sceneName: Maze
+    sprite: {fileID: 21300000, guid: 1fa1ac90c83142e4795b74553985d5c3, type: 3}
+  gameName: TANK BRAWL
